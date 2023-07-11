@@ -29,19 +29,69 @@ function scene:create(event)
 	local background = display.newRect(uiGroup, display.contentCenterX, display.contentCenterY, display.contentWidth, display.contentHeight)
 	background:setFillColor(unpack(uiColorDark))
 	
+	-- Displaying the game title
+	local titleText = display.newText(textGroup, "Bacteriomatics", display.contentCenterX, display.contentHeight - 900, native.systemFontBold, 120)
+	titleText:setFillColor(unpack(uiColorLight))
+	
+	-- Displaying the game version
+	local versionText = display.newText(textGroup, "Version: v0.5.0", display.contentWidth - 160, display.contentHeight - 20, native.systemFontBold, 30)
+	versionText:setFillColor(unpack(uiColorLight), 0.5)
+	
 	-- Creating buttons
+	
+	-- Play button
+	local buttonPlay = widget.newButton({
+		label = "play_button",
+--		onEvent = onExitButton,
+		shape = "roundedRect",
+		width = 500,
+		height = 120,
+		cornerRadius = 60,
+		fillColor = {default = uiColorGreenMedium, over = uiColorGreenLight},
+		strokeColor = {default = uiColorGreenLight, over = uiColorGreenMedium},
+		strokeWidth = 16,
+		labelColor = {default = uiColorLight, over = uiColorDark},
+		fontSize = 60
+		
+	})
+	
+	buttonPlay.x = display.contentCenterX
+	buttonPlay.y = display.contentHeight - 600
+	buttonPlay:setLabel("Play")
+	
+	-- Settings button
+	local buttonSettings = widget.newButton({
+		label = "settings_button",
+--		onEvent = onExitButton,
+		shape = "roundedRect",
+		width = 500,
+		height = 120,
+		cornerRadius = 60,
+		fillColor = {default = uiColorGreenMedium, over = uiColorGreenLight},
+		strokeColor = {default = uiColorGreenLight, over = uiColorGreenMedium},
+		strokeWidth = 16,
+		labelColor = {default = uiColorLight, over = uiColorDark},
+		fontSize = 60
+		
+	})
+	
+	buttonSettings.x = display.contentCenterX
+	buttonSettings.y = display.contentHeight - 400
+	buttonSettings:setLabel("Settings")
+	
+	-- Exit button
 	local buttonExit = widget.newButton({
 		label = "exit_button",
 		onEvent = onExitButton,
 		shape = "roundedRect",
-		width = 300,
-		height = 80,
-		cornerRadius = 20,
-		fillColor = {default = uiColorGreenMedium, over = uiColorGreenMedium},
+		width = 500,
+		height = 120,
+		cornerRadius = 60,
+		fillColor = {default = uiColorGreenMedium, over = uiColorGreenLight},
 		strokeColor = {default = uiColorGreenLight, over = uiColorGreenMedium},
-		strokeWidth = 8,
-		labelColor = {default = uiColorLight},
-		fontSize = 36
+		strokeWidth = 16,
+		labelColor = {default = uiColorLight, over = uiColorDark},
+		fontSize = 60
 		
 	})
 	

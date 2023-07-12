@@ -9,6 +9,20 @@ local uiColorGreenDark = {0.01, 0.15, 0.07}
 local uiColorGreenMedium = {0.02, 0.46, 0.22}
 local uiColorGreenLight = {0.15, 0.97, 0.52}
 
+-- Play button function
+local function onPlayButton(event)
+	if(event.phase == "ended") then
+		composer.gotoScene("simulation")
+	end
+end
+
+-- Settings button function
+local function onSettingsButton(event)
+	if(event.phase == "ended") then
+		composer.gotoScene("settings")
+	end
+end
+
 -- Exit button function
 local function onExitButton(event)
 	if(event.phase == "ended") then
@@ -42,7 +56,7 @@ function scene:create(event)
 	-- Play button
 	local buttonPlay = widget.newButton({
 		label = "play_button",
---		onEvent = onExitButton,
+		onEvent = onPlayButton,
 		shape = "roundedRect",
 		width = 500,
 		height = 120,
@@ -52,9 +66,9 @@ function scene:create(event)
 		strokeWidth = 16,
 		labelColor = {default = uiColorLight, over = uiColorDark},
 		fontSize = 60
-		
 	})
 	
+	uiGroup:insert(buttonPlay)
 	buttonPlay.x = display.contentCenterX
 	buttonPlay.y = display.contentHeight - 600
 	buttonPlay:setLabel("Play")
@@ -62,7 +76,7 @@ function scene:create(event)
 	-- Settings button
 	local buttonSettings = widget.newButton({
 		label = "settings_button",
---		onEvent = onExitButton,
+		onEvent = onSettingsButton,
 		shape = "roundedRect",
 		width = 500,
 		height = 120,
@@ -72,9 +86,9 @@ function scene:create(event)
 		strokeWidth = 16,
 		labelColor = {default = uiColorLight, over = uiColorDark},
 		fontSize = 60
-		
 	})
 	
+	uiGroup:insert(buttonSettings)
 	buttonSettings.x = display.contentCenterX
 	buttonSettings.y = display.contentHeight - 400
 	buttonSettings:setLabel("Settings")
@@ -92,9 +106,9 @@ function scene:create(event)
 		strokeWidth = 16,
 		labelColor = {default = uiColorLight, over = uiColorDark},
 		fontSize = 60
-		
 	})
 	
+	uiGroup:insert(buttonExit)
 	buttonExit.x = display.contentCenterX
 	buttonExit.y = display.contentHeight - 200
 	buttonExit:setLabel("Exit")

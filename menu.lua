@@ -48,7 +48,7 @@ function scene:create(event)
 	titleText:setFillColor(unpack(uiColorLight))
 	
 	-- Displaying the game version
-	local versionText = display.newText(textGroup, "Version: v0.5.0", display.contentWidth - 160, display.contentHeight - 20, native.systemFontBold, 30)
+	local versionText = display.newText(textGroup, "Version: v" .. system.getInfo("appVersionString"), display.contentWidth - 160, display.contentHeight - 20, native.systemFontBold, 30)
 	versionText:setFillColor(unpack(uiColorLight), 0.5)
 	
 	-- Creating buttons

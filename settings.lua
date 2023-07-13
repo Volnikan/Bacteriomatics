@@ -9,6 +9,19 @@ local uiColorGreenDark = {0.01, 0.15, 0.07}
 local uiColorGreenMedium = {0.02, 0.46, 0.22}
 local uiColorGreenLight = {0.15, 0.97, 0.52}
 
+-- Slider imagesheet options
+local sliderOptions = {
+	frames = {
+		{x = 4, y = 76, width = 32, height = 32},
+		{x = 44, y = 76, width = 32, height = 32},
+		{x = 76, y = 4, width = 32, height = 32},
+		{x = 76, y = 36, width = 32, height = 32},
+		{x = 4, y = 4, width = 64, height = 64}
+	},
+	sheetContentWidth = 112,
+	sheetContentHeight = 112
+}
+
 -- Back button function
 local function onBackButton(event)
 	if(event.phase == "ended") then
@@ -46,10 +59,24 @@ function scene:create(event)
 	musicVolumeText.anchorY = 0.5
 	languageText:setFillColor(unpack(uiColorLight))
 	
+	-- Music volume slider
+	local sliderSheet = graphics.newImageSheet("Images/Sliders/SliderImageSheet.png", sliderOptions)
+	
 	local musicSlider = widget.newSlider(
 		{
+			sheet = sliderSheet,
+			leftFrame = 1,
+			middleFrame = 2,
+			rightFrame = 3,
+			fillFrame = 4,
+			frameWidth = 48,
+			frameHeight = 48,
+			handleFrame = 5,
+			handleWidth = 96,
+			handleHeight = 96,
 			x = display.contentWidth - 600,
 			y = 320,
+			orientation = "horizontal",
 			width = 800,
 			value = 50
 		}
@@ -67,8 +94,19 @@ function scene:create(event)
 	
 	local soundSlider = widget.newSlider(
 		{
+			sheet = sliderSheet,
+			leftFrame = 1,
+			middleFrame = 2,
+			rightFrame = 3,
+			fillFrame = 4,
+			frameWidth = 48,
+			frameHeight = 48,
+			handleFrame = 5,
+			handleWidth = 96,
+			handleHeight = 96,
 			x = display.contentWidth - 600,
 			y = 520,
+			orientation = "horizontal",
 			width = 800,
 			value = 50
 		}

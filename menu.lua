@@ -12,7 +12,7 @@ local uiColorGreenLight = {0.15, 0.97, 0.52}
 -- Play button function
 local function onPlayButton(event)
 	if(event.phase == "ended") then
-		composer.gotoScene("simulation")
+		composer.gotoScene("game")
 	end
 end
 

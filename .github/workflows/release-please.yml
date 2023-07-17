@@ -17,3 +17,4 @@ jobs:
         with:
           release-type: node
           package-name: release-please-action
+          changelog-types: '[{"type":"feat","section":"Features","hidden":false},{"type":"fix","section":"Bug Fixes","hidden":false},{"type":"docs","section":"Documentation Changes","hidden":false},{"type":"perf","section":"Performance Improvements","hidden":false},{"type":"chore","section":"Miscellaneous","hidden":false}]'

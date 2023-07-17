@@ -28,8 +28,39 @@ local speciesList = {
 	"Xerodus"
 }
 
+-- Creating variables
+local budgetText
+local zoomText
 local money = 0
 local zoom = 1000
+
+-- Plus button function
+local function onPlusButton(event)
+
+	if(event.phase == "ended") then
+		if(zoom >= 200 and zoom < 1000) then
+			zoom = zoom + 100
+			zoomText.text = "Zoom: x" .. zoom
+		elseif(zoom >= 1000 and zoom < 2000) then
+			zoom = zoom + 200
+			zoomText.text = "Zoom: x" .. zoom
+		end
+	end
+end
+
+-- Minus button function
+local function onMinusButton(event)
+
+	if(event.phase == "ended") then
+		if(zoom > 200 and zoom <= 1000) then
+			zoom = zoom - 100
+			zoomText.text = "Zoom: x" .. zoom
+		elseif(zoom > 1000 and zoom <= 2000) then
+			zoom = zoom - 200
+			zoomText.text = "Zoom: x" .. zoom
+		end
+	end
+end
 
 -- Bacteria creation function
 local function createNewBacteria()
@@ -51,25 +82,13 @@ function scene:create(event)
 	sceneGroup:insert(uiGroup)
 	sceneGroup:insert(textGroup)
 	
-	-- Turning on physics and setting up gravity
-	physics.start()
-	physics.setGravity(0, 0)
-	
-	-- List of all bacterias
-	local bacteriasList = {}
-	
-	-- Initializing bacterias and their properties
-	local bact = {} -- bacteria's template
-	bact.id = 0
-	bact.genus = ""
-	bact.species = ""
-	bact.sizeX = 40
-	bact.sizeY = 200
-	bact.color = {0, 0, 0}
-	
 	-- Creating map background
 	local map = display.newRect(bgGroup, display.contentCenterX, display.contentCenterY, display.contentWidth, display.contentHeight)
 	map:setFillColor(unpack(uiColorLight))
+	
+	--------------------------------
+	-- INTERFACE BLOCK BEGINS
+	--------------------------------
 	
 	-- Creating microscope background
 	local microscopeBg = display.newImageRect(uiGroup, "Images/Backgrounds/MicroscopeBg.png", 1920, 1080)
@@ -87,41 +106,58 @@ function scene:create(event)
 	-- Displaying text on the panel
 	
 	-- Budget string
-	local budgetText = display.newText(textGroup, "Budget: $" .. money, 40, 65, native.systemFont, 60)
+	budgetText = display.newText(textGroup, "Budget: $" .. money, 40, 65, native.systemFont, 60)
 	budgetText.anchorX = 0
 	budgetText.anchorY = 0.5
 	budgetText:setFillColor(unpack(uiColorLight))
 	
 	-- Zoom string
-	local zoomText = display.newText(textGroup, "Zoom: x" .. zoom, display.contentCenterX, 65, native.systemFont, 60)
+	zoomText = display.newText(textGroup, "Zoom: x" .. zoom, display.contentCenterX, 65, native.systemFont, 60)
 	zoomText:setFillColor(unpack(uiColorLight))
 	
 	-- Creating buttons
 	
-	-- Zoom stepper
-	local stepperOptions = {
-		
-		width = 100,
-		height = 200,
-		numFrames = 5,
-		sheetContentWidth = 500,
-		sheetContentHeight = 200
-	}
+	-- Zoom plus button
+	local plusButton = widget.newButton({
+		label = "plus_button",
+		onEvent = onPlusButton,
+		shape = "roundedRect",
+		width = 160,
+		height = 160,
+		cornerRadius = 40,
+		fillColor = {default = uiColorGreenMedium, over = uiColorGreenLight},
+		strokeColor = {default = uiColorGreenLight, over = uiColorGreenMedium},
+		strokeWidth = 12,
+		labelColor = {default = uiColorLight, over = uiColorDark},
+		fontSize = 160
+	})
 	
-	local stepperSheet = graphics.newImageSheet("Images/Buttons/StepperSheet.png", stepperOptions)
+	uiGroup:insert(plusButton)
+	plusButton.x = 240
+	plusButton.y = 280
+	plusButton:setLabel("+")
 	
-	local newStepper = widget.newStepper({
-		x = 150,
-		y = 300,
-        sheet = stepperSheet,
-        defaultFrame = 1,
-        noMinusFrame = 3,
-        noPlusFrame = 4,
-        minusActiveFrame = 2,
-        plusActiveFrame = 5,
-        -- onPress = onStepperPress
-    })
-	newStepper:rotate(0)
+	
+	-- Zoom minus button
+	local minusButton = widget.newButton({
+		label = "minus_button",
+		onEvent = onMinusButton,
+		shape = "roundedRect",
+		width = 160,
+		height = 160,
+		cornerRadius = 40,
+		fillColor = {default = uiColorGreenMedium, over = uiColorGreenLight},
+		strokeColor = {default = uiColorGreenLight, over = uiColorGreenMedium},
+		strokeWidth = 12,
+		labelColor = {default = uiColorLight, over = uiColorDark},
+		fontSize = 160
+	})
+	
+	uiGroup:insert(minusButton)
+	minusButton.x = 240
+	minusButton.y = 500
+	minusButton:setLabel("–")
+	
 	
 	-- Navigational joystick
 	
@@ -136,6 +172,26 @@ function scene:create(event)
 	navJoystickInner:setFillColor(unpack(uiColorGreenMedium))
 	navJoystickInner:setStrokeColor(unpack(uiColorGreenLight))
 	navJoystickInner.strokeWidth = 8
+	
+	--------------------------------
+	-- INTERFACE BLOCK ENDS
+	--------------------------------
+	
+	-- Turning on physics and setting up gravity
+	physics.start()
+	physics.setGravity(0, 0)
+	
+	-- List of all bacterias
+	local bacteriasList = {}
+	
+	-- Initializing bacterias and their properties
+	local bact = {} -- bacteria's template
+	bact.id = 0
+	bact.genus = ""
+	bact.species = ""
+	bact.sizeX = 40
+	bact.sizeY = 200
+	bact.color = {0, 0, 0}
 	
 end
 

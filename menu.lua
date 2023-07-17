@@ -39,6 +39,10 @@ function scene:create(event)
 	sceneGroup:insert(uiGroup)
 	sceneGroup:insert(textGroup)
 	
+	--------------------------------
+	-- INTERFACE BLOCK BEGINS
+	--------------------------------
+	
 	-- Creating background
 	local background = display.newRect(uiGroup, display.contentCenterX, display.contentCenterY, display.contentWidth, display.contentHeight)
 	background:setFillColor(unpack(uiColorDark))
@@ -112,6 +116,10 @@ function scene:create(event)
 	buttonExit.x = display.contentCenterX
 	buttonExit.y = display.contentHeight - 200
 	buttonExit:setLabel("Exit")
+	
+	--------------------------------
+	-- INTERFACE BLOCK ENDS
+	--------------------------------
 	
 end
 

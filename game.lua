@@ -34,8 +34,15 @@ local zoomText
 local money = 0
 local zoom = 1000
 
+-- Sounds variables
+local buttonSound
+
 -- Menu button function
 local function onMenuButton(event)
+	
+	if(event.phase == "began") then
+		audio.play(buttonSound)
+	end
 	
 	if(event.phase == "ended") then
 		composer.gotoScene("menu")
@@ -44,7 +51,11 @@ end
 
 -- Plus button function
 local function onPlusButton(event)
-
+	
+	if(event.phase == "began") then
+		audio.play(buttonSound)
+	end
+	
 	if(event.phase == "ended") then
 		if(zoom >= 200 and zoom < 1000) then
 			zoom = zoom + 100
@@ -58,7 +69,11 @@ end
 
 -- Minus button function
 local function onMinusButton(event)
-
+	
+	if(event.phase == "began") then
+		audio.play(buttonSound)
+	end
+	
 	if(event.phase == "ended") then
 		if(zoom > 200 and zoom <= 1000) then
 			zoom = zoom - 100
@@ -193,7 +208,6 @@ function scene:create(event)
 	minusButton.y = 500
 	minusButton:setLabel("–")
 	
-	
 	-- Navigational joystick
 	
 	-- Outer part
@@ -211,6 +225,9 @@ function scene:create(event)
 	--------------------------------
 	-- INTERFACE BLOCK ENDS
 	--------------------------------
+	
+	-- Initializing sounds
+	buttonSound = audio.loadSound("Sounds/Button_sound1.wav")
 	
 	-- Turning on physics and setting up gravity
 	physics.start()
@@ -256,8 +273,10 @@ end
 
 -- SCENE:DESTROY
 function scene:destroy(event)
+	
 	local sceneGroup = self.view
-
+	audio.dispose(buttonSound)
+	
 end
 
 scene:addEventListener("create", scene)

@@ -9,8 +9,16 @@ local uiColorGreenDark = {0.01, 0.15, 0.07}
 local uiColorGreenMedium = {0.02, 0.46, 0.22}
 local uiColorGreenLight = {0.15, 0.97, 0.52}
 
+-- Sounds variables
+local buttonSound
+
 -- Play button function
 local function onPlayButton(event)
+	
+	if(event.phase == "began") then
+		audio.play(buttonSound)
+	end
+	
 	if(event.phase == "ended") then
 		composer.gotoScene("game")
 	end
@@ -18,6 +26,11 @@ end
 
 -- Settings button function
 local function onSettingsButton(event)
+	
+	if(event.phase == "began") then
+		audio.play(buttonSound)
+	end
+	
 	if(event.phase == "ended") then
 		composer.gotoScene("settings")
 	end
@@ -25,6 +38,11 @@ end
 
 -- Exit button function
 local function onExitButton(event)
+	
+	if(event.phase == "began") then
+		audio.play(buttonSound)
+	end
+	
 	if(event.phase == "ended") then
 		native.requestExit()
 	end
@@ -121,6 +139,9 @@ function scene:create(event)
 	-- INTERFACE BLOCK ENDS
 	--------------------------------
 	
+	-- Initializing sounds
+	buttonSound = audio.loadSound("Sounds/Button_sound1.wav")
+	
 end
 
 -- SCENE:SHOW
@@ -147,8 +168,10 @@ end
 
 -- SCENE:DESTROY
 function scene:destroy(event)
+	
 	local sceneGroup = self.view
-
+	audio.dispose(buttonSound)
+	
 end
 
 -- Adding scene event listeners

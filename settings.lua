@@ -9,6 +9,12 @@ local uiColorGreenDark = {0.01, 0.15, 0.07}
 local uiColorGreenMedium = {0.02, 0.46, 0.22}
 local uiColorGreenLight = {0.15, 0.97, 0.52}
 
+-- Creating variables
+local musicVolume = 50
+local soundVolume = 50
+local musicVolumeText
+local soundVolumeText
+
 -- Slider imagesheet options
 local sliderOptions = {
 	frames = {
@@ -21,6 +27,28 @@ local sliderOptions = {
 	sheetContentWidth = 112,
 	sheetContentHeight = 112
 }
+
+-- Music volume slider function
+local function onMusicSliderMove(event)
+
+	musicVolume = event.value
+	musicVolumeText.text = "Music volume: " .. musicVolume
+	
+	if(event.phase == "ended") then
+		
+	end
+end
+
+-- Sound volume slider function
+local function onSoundSliderMove(event)
+
+	soundVolume = event.value
+	soundVolumeText.text = "Sound volume: " .. soundVolume
+	
+	if(event.phase == "ended") then
+		
+	end
+end
 
 -- Back button function
 local function onBackButton(event)
@@ -54,7 +82,7 @@ function scene:create(event)
 	languageText:setFillColor(unpack(uiColorLight))
 	
 	-- Music volume settings
-	local musicVolumeText = display.newText(textGroup, "Music Volume: ", 120, 320, native.systemFontBold, 60)
+	musicVolumeText = display.newText(textGroup, "Music volume: " .. musicVolume, 120, 320, native.systemFontBold, 60)
 	musicVolumeText.anchorX = 0
 	musicVolumeText.anchorY = 0.5
 	languageText:setFillColor(unpack(uiColorLight))
@@ -78,7 +106,8 @@ function scene:create(event)
 			y = 320,
 			orientation = "horizontal",
 			width = 800,
-			value = 50
+			value = musicVolume,
+			listener = onMusicSliderMove
 		}
 	)
 	
@@ -87,10 +116,10 @@ function scene:create(event)
 	musicSlider.anchorY = 0.5
 	
 	-- Sound volume settings
-	local soundMusicText = display.newText(textGroup, "Sound Volume: ", 120, 520, native.systemFontBold, 60)
-	soundMusicText.anchorX = 0
-	soundMusicText.anchorY = 0.5
-	languageText:setFillColor(unpack(uiColorLight))
+	soundVolumeText = display.newText(textGroup, "Sound volume: " .. soundVolume, 120, 520, native.systemFontBold, 60)
+	soundVolumeText.anchorX = 0
+	soundVolumeText.anchorY = 0.5
+	soundVolumeText:setFillColor(unpack(uiColorLight))
 	
 	local soundSlider = widget.newSlider(
 		{
@@ -108,16 +137,14 @@ function scene:create(event)
 			y = 520,
 			orientation = "horizontal",
 			width = 800,
-			value = 50
+			value = soundVolume,
+			listener = onSoundSliderMove
 		}
 	)
 	
 	uiGroup:insert(soundSlider)
 	soundSlider.anchorX = 1
 	soundSlider.anchorY = 0.5
-	
-	
-	
 	
 	-- Creating buttons
 	

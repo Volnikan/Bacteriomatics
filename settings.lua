@@ -1,5 +1,6 @@
 local composer = require("composer")
 local widget = require("widget")
+local json = require("json")
 local scene = composer.newScene()
 
 -- Setting UI color palette
@@ -14,6 +15,14 @@ local musicVolume = 50
 local soundVolume = 50
 local musicVolumeText
 local soundVolumeText
+local settingsParametersPath = system.pathForFile("Settings.json", system.DocumentsDirectory)
+
+-- Settings table
+local settingsTable = {
+	["language"] = "",
+	["music"] = musicVolume,
+	["sound"] = soundVolume
+}
 
 -- Slider imagesheet options
 local sliderOptions = {
@@ -28,6 +37,36 @@ local sliderOptions = {
 	sheetContentHeight = 112
 }
 
+-- Reading settings function
+local function readSettings()
+	
+	local settingsFile = io.open(settingsParametersPath, "r")
+	
+	if settingsFile then
+		local contents = settingsFile:read("*a")
+		settingsTable = json.decode(contents)
+		musicVolume = settingsTable.music
+		soundVolume = settingsTable.sound
+	end
+	
+	io.close(settingsFile)
+	settingsFile = nil
+	
+end
+
+-- Writitng settings function
+local function writeSettings()
+	
+	settingsTable.music = musicVolume
+	settingsTable.sound = soundVolume
+	
+	local settingsFile = io.open(settingsParametersPath, "w")
+	settingsFile:write(json.encode(settingsTable))
+	io.close(settingsFile)
+	settingsFile = nil
+	
+end
+
 -- Music volume slider function
 local function onMusicSliderMove(event)
 
@@ -35,7 +74,7 @@ local function onMusicSliderMove(event)
 	musicVolumeText.text = "Music volume: " .. musicVolume
 	
 	if(event.phase == "ended") then
-		
+		writeSettings()
 	end
 end
 
@@ -46,7 +85,7 @@ local function onSoundSliderMove(event)
 	soundVolumeText.text = "Sound volume: " .. soundVolume
 	
 	if(event.phase == "ended") then
-		
+		writeSettings()
 	end
 end
 
@@ -74,6 +113,8 @@ function scene:create(event)
 	background:setFillColor(unpack(uiColorDark))
 	
 	-- Displaying settings
+	
+	readSettings()
 	
 	-- Language settings
 	local languageText = display.newText(textGroup, "Language: ", 120, 120, native.systemFontBold, 60)

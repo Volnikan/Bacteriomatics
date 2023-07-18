@@ -17,6 +17,9 @@ local musicVolumeText
 local soundVolumeText
 local settingsParametersPath = system.pathForFile("Settings.json", system.DocumentsDirectory)
 
+-- Sounds variables
+local buttonSound
+
 -- Settings table
 local settingsTable = {
 	["language"] = "",
@@ -91,6 +94,11 @@ end
 
 -- Back button function
 local function onBackButton(event)
+	
+	if(event.phase == "began") then
+		audio.play(buttonSound)
+	end
+	
 	if(event.phase == "ended") then
 		composer.gotoScene("menu")
 	end
@@ -211,6 +219,9 @@ function scene:create(event)
 	buttonBack.y = display.contentHeight - 120
 	buttonBack:setLabel("Back")
 	
+	-- Initializing sounds
+	buttonSound = audio.loadSound("Sounds/Button_sound1.wav")
+	
 end
 
 -- SCENE:SHOW
@@ -239,6 +250,7 @@ end
 function scene:destroy(event)
 	
 	local sceneGroup = self.view
+	audio.dispose(buttonSound)
 	
 end
 

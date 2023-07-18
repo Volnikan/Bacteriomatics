@@ -1,11 +1,5 @@
 # Changelog
 
-## [0.5.1-alpha](https://github.com/Volnikan/Bacteriomatics/compare/v0.5.0-alpha...v0.5.1-alpha) (2023-07-18)
-
-
-### Bug Fixes
-
-* **settings:** fix runtime error ([b73605f](https://github.com/Volnikan/Bacteriomatics/commit/b73605ff775086b9ca610323f42803505c8f4ded))
 
 ## [0.5.0-alpha](https://github.com/Volnikan/Bacteriomatics/compare/v0.4.1-alpha...v0.5.0-alpha) (2023-07-18)
 
@@ -20,6 +14,9 @@
 * hide status bar ([102414e](https://github.com/Volnikan/Bacteriomatics/commit/102414e926785f3d099af6b0db1a9ff142c52ee0))
 * save volume settings into device's memory ([365c6e6](https://github.com/Volnikan/Bacteriomatics/commit/365c6e6bb46bec902f7cb232697c3bbfab3161a1)), closes [#25](https://github.com/Volnikan/Bacteriomatics/issues/25)
 
+### Bug Fixes
+
+* **settings:** fix runtime error ([b73605f](https://github.com/Volnikan/Bacteriomatics/commit/b73605ff775086b9ca610323f42803505c8f4ded))
 
 ### Miscellaneous
 

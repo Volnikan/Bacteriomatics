@@ -50,9 +50,9 @@ local function readSettings()
 		settingsTable = json.decode(contents)
 		musicVolume = settingsTable.music
 		soundVolume = settingsTable.sound
+		io.close(settingsFile)
 	end
 	
-	io.close(settingsFile)
 	settingsFile = nil
 	
 end

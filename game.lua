@@ -34,6 +34,14 @@ local zoomText
 local money = 0
 local zoom = 1000
 
+-- Menu button function
+local function onMenuButton(event)
+	
+	if(event.phase == "ended") then
+		composer.gotoScene("menu")
+	end
+end
+
 -- Plus button function
 local function onPlusButton(event)
 
@@ -116,6 +124,33 @@ function scene:create(event)
 	zoomText:setFillColor(unpack(uiColorLight))
 	
 	-- Creating buttons
+	
+	-- Menu button sheet options
+	local menuSheetOptions = {
+		width = 120,
+		height = 120,
+		numFrames = 2,
+		border = 1,
+		sheetContentWidth = 122,
+		sheetContentHeight = 244
+	}
+	
+	-- Menu button image sheet
+	local menuButtonSheet = graphics.newImageSheet("Images/Buttons/MenuButtonSheet.png", menuSheetOptions)
+	
+	-- Menu button
+	local menuButton = widget.newButton({
+		sheet = menuButtonSheet,
+		defaultFrame = 1,
+		overFrame = 2,
+		onEvent = onMenuButton,
+	})
+	
+	uiGroup:insert(menuButton)
+	menuButton.anchorX = 1
+	menuButton.anchorY = 0
+	menuButton.x = display.contentWidth - 10
+	menuButton.y = 5
 	
 	-- Zoom plus button
 	local plusButton = widget.newButton({

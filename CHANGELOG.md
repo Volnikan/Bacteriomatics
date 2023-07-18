@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.1-alpha](https://github.com/Volnikan/Bacteriomatics/compare/v0.5.0-alpha...v0.5.1-alpha) (2023-07-18)
+
+
+### Bug Fixes
+
+* **settings:** fix runtime error ([b73605f](https://github.com/Volnikan/Bacteriomatics/commit/b73605ff775086b9ca610323f42803505c8f4ded))
+
 ## [0.5.0-alpha](https://github.com/Volnikan/Bacteriomatics/compare/v0.4.1-alpha...v0.5.0-alpha) (2023-07-18)
 
 

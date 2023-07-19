@@ -6,8 +6,8 @@ changelog:
 		- title: New features
 		labels:
         		- new-feature
-    		- title: Improvements
-      		labels:
+    	- title: Improvements
+      	labels:
         		- improvement
 		- title: Bug fixes
 		labels:

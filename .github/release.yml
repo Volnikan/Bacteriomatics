@@ -4,14 +4,14 @@ changelog:
       - Volnikan
   categories:
     - title: New features
-    labels:
-      - new-feature
+      labels:
+        - new-feature
     - title: Improvements
-    labels:
-      - improvement
+      labels:
+        - improvement
     - title: Bug fixes
-    labels:
-      - bugfix
+      labels:
+        - bugfix
     - title: Other Changes
-    labels:
-      - "*"
+      labels:
+        - "*"

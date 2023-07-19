@@ -1,17 +1,17 @@
 changelog:
-	exclude:
-		authors:
-			- Volnikan
-	categories:
-		- title: New features
-		labels:
-        		- new-feature
-    	- title: Improvements
-      	labels:
-        		- improvement
-		- title: Bug fixes
-		labels:
-        		- bugfix
-		- title: Other Changes
-		labels:
-        		- "*"
+  exclude:
+    authors:
+      - Volnikan
+  categories:
+    - title: New features
+    labels:
+      - new-feature
+    - title: Improvements
+    labels:
+      - improvement
+    - title: Bug fixes
+    labels:
+      - bugfix
+    - title: Other Changes
+    labels:
+      - "*"

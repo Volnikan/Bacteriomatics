@@ -1,7 +1,4 @@
 changelog:
-  exclude:
-    authors:
-      - Volnikan
   categories:
     - title: New features
       labels:
@@ -12,6 +9,3 @@ changelog:
     - title: Bug fixes
       labels:
         - bugfix
-    - title: Other Changes
-      labels:
-        - "*"

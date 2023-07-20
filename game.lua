@@ -179,7 +179,9 @@ function scene:create(event)
 		strokeColor = {default = uiColorGreenLight, over = uiColorGreenMedium},
 		strokeWidth = 12,
 		labelColor = {default = uiColorLight, over = uiColorDark},
-		fontSize = 160
+		fontSize = 160,
+		font = "Tahoma",
+		labelYOffset = -11
 	})
 	
 	uiGroup:insert(plusButton)
@@ -200,7 +202,9 @@ function scene:create(event)
 		strokeColor = {default = uiColorGreenLight, over = uiColorGreenMedium},
 		strokeWidth = 12,
 		labelColor = {default = uiColorLight, over = uiColorDark},
-		fontSize = 160
+		fontSize = 160,
+		font = "Tahoma",
+		labelYOffset = -11
 	})
 	
 	uiGroup:insert(minusButton)

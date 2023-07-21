@@ -20,7 +20,7 @@ local function onPlayButton(event)
 	end
 	
 	if(event.phase == "ended") then
-		composer.gotoScene("game")
+		composer.gotoScene("Scenes.game")
 	end
 end
 
@@ -32,7 +32,7 @@ local function onSettingsButton(event)
 	end
 	
 	if(event.phase == "ended") then
-		composer.gotoScene("settings")
+		composer.gotoScene("Scenes.settings")
 	end
 end
 

@@ -45,7 +45,7 @@ local function onMenuButton(event)
 	end
 	
 	if(event.phase == "ended") then
-		composer.gotoScene("menu")
+		composer.gotoScene("Scenes.menu")
 	end
 end
 

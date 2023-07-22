@@ -3,6 +3,16 @@ local widget = require("widget")
 local physics = require("physics")
 local scene = composer.newScene()
 
+-- Turning on physics and setting up gravity
+physics.start()
+physics.setGravity(0, 0)
+
+-- Creating scene groups
+local bgGroup
+local bactGroup
+local uiGroup
+local textGroup
+
 -- Setting UI color palette
 local uiColorDark = {0.13, 0.13, 0.13}
 local uiColorLight = {0.94, 0.94, 0.94}
@@ -33,9 +43,29 @@ local budgetText
 local zoomText
 local money = 0
 local zoom = 1000
+local idCount = 0
+
+-- List of all bacterias
+local bacteriaList = {}
+
+-- Initializing bacteria and their properties
+local bact = {} -- bacterium's template
+bact.id = 0
+bact.genus = ""
+bact.species = ""
+bact.generation = 1
+bact.sizeX = 40
+bact.sizeY = 200
+bact.color = {0, 0, 0.6}
+bact.membraneSize = 6
+bact.membraneColor = {0, 0.6, 0}
 
 -- Sounds variables
 local buttonSound
+
+--------------------------------
+-- FUNCTIONS BLOCK STARTS
+--------------------------------
 
 -- Menu button function
 local function onMenuButton(event)
@@ -85,20 +115,52 @@ local function onMinusButton(event)
 	end
 end
 
--- Bacteria creation function
-local function createNewBacteria()
+-- Bacterium creation function
+local function createNewBacterium()
+	
+	print("\nCreating a new bacterium!\n")
+	
+	-- Displaying the bacterium
+	local newBact = display.newRoundedRect(bactGroup, display.contentCenterX, display.contentCenterY, math.random(20, 60), math.random(100, 240), 10)
+	table.insert(bacteriaList, newBact)
+	
+	-- Setting physical and graphical properties
+	physics.addBody(newBact, "dynamic", {friction = 0.5, bounce = 0.3})
+	newBact.path.radius = newBact.path.width * 0.5
+	newBact:setFillColor(unpack(bact.color))
+	newBact:setStrokeColor(unpack(bact.membraneColor))
+	newBact.strokeWidth = bact.membraneSize
+	
+	-- Setting id
+	newBact.id = idCount
+	idCount = idCount + 1
+	print("Bacterium's ID: " .. newBact.id)
+	
+	-- Initializing genus and species
+	newBact.genus = genusList[math.random(table.maxn(genusList))]
+	newBact.species = speciesList[math.random(table.maxn(speciesList))]
+	print("Bacterium's name: " .. newBact.genus .. " " .. newBact.species)
+	
+	-- Counting generation
+	newBact.generation = bact.generation
+	bact.generation = bact.generation + 1
+	print("Bacterium's generation: " .. newBact.generation)
 	
 end
+
+--------------------------------
+-- FUNCTIONS BLOCK ENDS
+--------------------------------
 
 -- SCENE:CREATE
 function scene:create(event)
 	
 	-- Creating scene display groups
 	local sceneGroup = self.view
-	local bgGroup = display.newGroup()
-	local bactGroup = display.newGroup()
-	local uiGroup = display.newGroup()
-	local textGroup = display.newGroup()
+	bgGroup = display.newGroup()
+	bactGroup = display.newGroup()
+	uiGroup = display.newGroup()
+	textGroup = display.newGroup()
 	
 	sceneGroup:insert(bgGroup)
 	sceneGroup:insert(bactGroup)
@@ -108,6 +170,8 @@ function scene:create(event)
 	-- Creating map background
 	local map = display.newRect(bgGroup, display.contentCenterX, display.contentCenterY, display.contentWidth, display.contentHeight)
 	map:setFillColor(unpack(uiColorLight))
+	
+	createNewBacterium()
 	
 	--------------------------------
 	-- INTERFACE BLOCK BEGINS
@@ -232,22 +296,6 @@ function scene:create(event)
 	
 	-- Initializing sounds
 	buttonSound = audio.loadSound("Sounds/Button_sound1.wav")
-	
-	-- Turning on physics and setting up gravity
-	physics.start()
-	physics.setGravity(0, 0)
-	
-	-- List of all bacterias
-	local bacteriasList = {}
-	
-	-- Initializing bacterias and their properties
-	local bact = {} -- bacteria's template
-	bact.id = 0
-	bact.genus = ""
-	bact.species = ""
-	bact.sizeX = 40
-	bact.sizeY = 200
-	bact.color = {0, 0, 0}
 	
 end
 

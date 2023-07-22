@@ -18,16 +18,16 @@ settings =
 	{
 		usesPermissions =
 		{
-			"android.permission.INTERNET",
+			"android.permission.INTERNET"
 		},
 	},
 	
 	--
 	-- Windows section
 	--
-    win32 =
+    window =
 	{
-		defaultMode = "fullscreen",
+		defaultMode = "fullscreen"
 	},
 
 	--

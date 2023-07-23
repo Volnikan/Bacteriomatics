@@ -39,6 +39,7 @@ local speciesList = {
 }
 
 -- Creating variables
+local gameLoopTimer
 local budgetText
 local zoomText
 local money = 0
@@ -146,6 +147,47 @@ local function createNewBacterium()
 	bact.generation = bact.generation + 1
 	print("Bacterium's generation: " .. newBact.generation)
 	
+	newBact.angle = 0
+	
+end
+
+-- Idle moving bacteria function
+local function idleMove(bacterium)
+	
+	timer.performWithDelay(1000, bacterium:setLinearVelocity(0, 0))
+	bacterium:rotate(0)
+
+	print("\nbacterium.angle was = " .. bacterium.angle)
+	local angle = math.random(-180, 180)
+	transition.to(bacterium, {time = 500, onComplete = bacterium:rotate(angle)})
+	-- transition.to(bacterium, {time = 500, rotation = angle})
+	bacterium.angle = math.abs(math.round(bacterium.rotation) % 360)
+	-- 
+	-- bacterium.angle = (bacterium.angle + angle) % 360
+	print("bacterium.angle is = " .. bacterium.angle)
+	
+	if(bacterium.angle >= 0 and bacterium.angle < 90) then
+		bacterium:setLinearVelocity(bacterium.contentWidth - bacterium.width, -bacterium.contentHeight)
+	elseif(bacterium.angle >= 90 and bacterium.angle < 180) then
+		bacterium:setLinearVelocity(bacterium.contentWidth - bacterium.width, bacterium.height - bacterium.contentHeight)
+	elseif(bacterium.angle >= 180 and bacterium.angle < 270) then
+		bacterium:setLinearVelocity(-(bacterium.contentWidth - bacterium.width), bacterium.height - bacterium.contentHeight)
+	elseif(bacterium.angle >= 270 and bacterium.angle < 360) then
+		bacterium:setLinearVelocity(-(bacterium.contentWidth - bacterium.width), -bacterium.contentHeight)
+	end
+	
+end
+
+-- Game loop function
+local function gameLoop()
+	
+	for i = 1, #bacteriaList, 1 do
+	
+		local thisBact = bacteriaList[i]
+		idleMove(thisBact)
+		
+	end
+	
 end
 
 --------------------------------
@@ -170,6 +212,9 @@ function scene:create(event)
 	-- Creating map background
 	local map = display.newRect(bgGroup, display.contentCenterX, display.contentCenterY, display.contentWidth, display.contentHeight)
 	map:setFillColor(unpack(uiColorLight))
+	
+	local borders = display.newLine(bactGroup, 0, 0, display.contentWidth, 0, display.contentWidth, display.contentHeight, 0, display.contentHeight, 0, 0)
+	physics.addBody(borders, "static", {friction = 0.5, bounce = 0.3})
 	
 	createNewBacterium()
 	
@@ -308,6 +353,8 @@ function scene:show(event)
 		
 	elseif(event.phase == "did") then
 		
+		gameLoopTimer = timer.performWithDelay(math.random(3000, 6000), gameLoop, 0)
+		
 	end
 end
 
@@ -319,6 +366,8 @@ function scene:hide(event)
 	if(event.phase == "will") then
 		
 	elseif(event.phase == "did") then
+		
+		timer.pause(gameLoopTimer)
 		
 	end
 end

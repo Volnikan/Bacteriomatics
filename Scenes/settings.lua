@@ -95,6 +95,11 @@ end
 -- Back button function
 local function onBackButton(event)
 	
+	if(event.keyName == "back") then
+		composer.gotoScene("Scenes.menu")
+		return true
+	end
+	
 	if(event.phase == "began") then
 		audio.play(buttonSound)
 	end
@@ -102,6 +107,7 @@ local function onBackButton(event)
 	if(event.phase == "ended") then
 		composer.gotoScene("Scenes.menu")
 	end
+
 end
 
 -- SCENE:CREATE
@@ -232,6 +238,8 @@ function scene:show(event)
 		
 	elseif(event.phase == "did") then
 		
+		Runtime:addEventListener("key", onBackButton)
+		
 	end
 end
 
@@ -242,6 +250,8 @@ function scene:hide(event)
 	if(event.phase == "will") then
 		
 	elseif(event.phase == "did") then
+		
+		Runtime:removeEventListener("key", onBackButton)
 		
 	end
 end

@@ -12,6 +12,17 @@ local uiColorGreenLight = {0.15, 0.97, 0.52}
 -- Sounds variables
 local buttonSound
 
+-- Back button function
+local function onBackButton(event)
+	
+	if(event.keyName == "back") then
+		
+		composer.showOverlay("Scenes.exit_confirm", {effect = "fromTop", time = 500, isModal = true})
+		return true
+		
+	end
+end
+
 -- Play button function
 local function onPlayButton(event)
 	
@@ -152,6 +163,8 @@ function scene:show(event)
 		
 	elseif(event.phase == "did") then
 		
+		Runtime:addEventListener("key", onBackButton)
+		
 	end
 end
 
@@ -162,6 +175,8 @@ function scene:hide(event)
 	if(event.phase == "will") then
 		
 	elseif(event.phase == "did") then
+		
+		Runtime:removeEventListener("key", onBackButton)
 		
 	end
 end

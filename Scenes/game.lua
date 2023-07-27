@@ -68,6 +68,15 @@ local buttonSound
 -- FUNCTIONS BLOCK STARTS
 --------------------------------
 
+-- Back button function
+local function onBackButton(event)
+	
+	if(event.keyName == "back") then
+		composer.gotoScene("Scenes.menu")
+		return true
+	end
+end
+
 -- Menu button function
 local function onMenuButton(event)
 	
@@ -353,6 +362,7 @@ function scene:show(event)
 		
 	elseif(event.phase == "did") then
 		
+		Runtime:addEventListener("key", onBackButton)
 		gameLoopTimer = timer.performWithDelay(math.random(3000, 6000), gameLoop, 0)
 		
 	end
@@ -367,6 +377,7 @@ function scene:hide(event)
 		
 	elseif(event.phase == "did") then
 		
+		Runtime:removeEventListener("key", onBackButton)
 		timer.pause(gameLoopTimer)
 		
 	end

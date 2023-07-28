@@ -7,6 +7,10 @@ local scene = composer.newScene()
 physics.start()
 physics.setGravity(0, 0)
 
+--------------------------------------------------
+-- VARIABLES AND TABLES BLOCK BEGINS
+--------------------------------------------------
+
 -- Creating scene groups
 local bgGroup
 local bactGroup
@@ -46,6 +50,16 @@ local money = 0
 local zoom = 1000
 local idCount = 0
 
+-- List of all nutrients
+local nutrientsList = {}
+
+-- Initializing nutrients and their properties
+local nutrient = {} -- nutrient's template
+nutrient.id = 0
+nutrient.name = ""
+nutrient.size = 0 -- radius
+nutrient.color = {0.8, 0, 0}
+
 -- List of all bacterias
 local bacteriaList = {}
 
@@ -64,9 +78,11 @@ bact.membraneColor = {0, 0.6, 0}
 -- Sounds variables
 local buttonSound
 
---------------------------------
--- FUNCTIONS BLOCK STARTS
---------------------------------
+--------------------------------------------------
+-- VARIABLES AND TABLES BLOCK ENDS
+--------------------------------------------------
+-- FUNCTIONS BLOCK BEGINS
+--------------------------------------------------
 
 -- Back button function
 local function onBackButton(event)
@@ -125,6 +141,42 @@ local function onMinusButton(event)
 	end
 end
 
+-- Nutrients creation function
+local function createNewNutrient(name)
+	
+	-- Displaying the nutrient
+	local newNutrient = display.newCircle(bactGroup, math.random(20, display.contentWidth - 20), math.random(20, display.contentHeight - 20), 20)
+	table.insert(nutrientsList, newNutrient)
+	
+	-- Setting physical and graphical properties
+	physics.addBody(newNutrient, "dynamic", {density = 2})
+	newNutrient:setFillColor(unpack(nutrient.color))
+	newNutrient:applyLinearImpulse(math.random(-4, 4), math.random(-4, 4), newNutrient.x, newNutrient.y)
+	
+	-- Setting nutrient's name
+	if(name ~= nil) then
+		
+		newNutrient.name = name
+		
+	else
+		
+		newNutrient.name = "unknown"
+		
+	end
+end
+
+-- Random nutrient name function
+local function newNutrientName()
+	
+	local letters = {"A", "B", "C", "D", "E", "F"}
+	local name = letters[math.random(1, 6)]
+	
+	name = name .. math.random(0, 9)
+	name = name .. math.random(0, 9)
+	
+	return name	
+end
+
 -- Bacterium creation function
 local function createNewBacterium()
 	
@@ -135,7 +187,7 @@ local function createNewBacterium()
 	table.insert(bacteriaList, newBact)
 	
 	-- Setting physical and graphical properties
-	physics.addBody(newBact, "dynamic", {friction = 0.5, bounce = 0.3})
+	physics.addBody(newBact, "dynamic", {density = 6, friction = 0.5, bounce = 0.3})
 	newBact.path.radius = newBact.path.width * 0.5
 	newBact:setFillColor(unpack(bact.color))
 	newBact:setStrokeColor(unpack(bact.membraneColor))
@@ -199,9 +251,9 @@ local function gameLoop()
 	
 end
 
---------------------------------
+--------------------------------------------------
 -- FUNCTIONS BLOCK ENDS
---------------------------------
+--------------------------------------------------
 
 -- SCENE:CREATE
 function scene:create(event)
@@ -222,14 +274,23 @@ function scene:create(event)
 	local map = display.newRect(bgGroup, display.contentCenterX, display.contentCenterY, display.contentWidth, display.contentHeight)
 	map:setFillColor(unpack(uiColorLight))
 	
+	-- Creating physical borders
 	local borders = display.newLine(bactGroup, 0, 0, display.contentWidth, 0, display.contentWidth, display.contentHeight, 0, display.contentHeight, 0, 0)
 	physics.addBody(borders, "static", {friction = 0.5, bounce = 0.3})
 	
+	local currentNutrient = newNutrientName()
+	
+	for i = 1, 20, 1 do
+		
+		createNewNutrient(currentNutrient)
+		
+	end
+	
 	createNewBacterium()
 	
-	--------------------------------
+	--------------------------------------------------
 	-- INTERFACE BLOCK BEGINS
-	--------------------------------
+	--------------------------------------------------
 	
 	-- Creating microscope background
 	local microscopeBg = display.newImageRect(uiGroup, "Images/Backgrounds/MicroscopeBg.png", 1920, 1080)
@@ -344,9 +405,9 @@ function scene:create(event)
 	navJoystickInner:setStrokeColor(unpack(uiColorGreenLight))
 	navJoystickInner.strokeWidth = 8
 	
-	--------------------------------
+	--------------------------------------------------
 	-- INTERFACE BLOCK ENDS
-	--------------------------------
+	--------------------------------------------------
 	
 	-- Initializing sounds
 	buttonSound = audio.loadSound("Sounds/Button_sound1.wav")

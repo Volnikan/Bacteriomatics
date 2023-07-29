@@ -49,6 +49,8 @@ local zoomText
 local money = 0
 local zoom = 1000
 local idCount = 0
+local borders
+local navJoystickInner
 
 -- List of all nutrients
 local nutrientsList = {}
@@ -116,9 +118,17 @@ local function onPlusButton(event)
 		if(zoom >= 200 and zoom < 1000) then
 			zoom = zoom + 100
 			zoomText.text = "Zoom: x" .. zoom
+			bactGroup.xScale = bactGroup.xScale + 0.1
+			bactGroup.yScale = bactGroup.yScale + 0.1
+			-- bactGroup.x = bactGroup.x - bactGroup.x * (1 - bactGroup.xScale)
+			-- bactGroup.y = bactGroup.y * bactGroup.yScale
 		elseif(zoom >= 1000 and zoom < 2000) then
 			zoom = zoom + 200
 			zoomText.text = "Zoom: x" .. zoom
+			bactGroup.xScale = bactGroup.xScale + 0.2
+			bactGroup.yScale = bactGroup.yScale + 0.2
+			-- bactGroup.x = bactGroup.x - bactGroup.x * (1 - bactGroup.xScale)
+			-- bactGroup.y = bactGroup.y * bactGroup.yScale
 		end
 	end
 end
@@ -134,9 +144,17 @@ local function onMinusButton(event)
 		if(zoom > 200 and zoom <= 1000) then
 			zoom = zoom - 100
 			zoomText.text = "Zoom: x" .. zoom
+			bactGroup.xScale = bactGroup.xScale - 0.1
+			bactGroup.yScale = bactGroup.yScale - 0.1
+			-- bactGroup.x = bactGroup.x * bactGroup.xScale
+			-- bactGroup.y = bactGroup.y * bactGroup.yScale
 		elseif(zoom > 1000 and zoom <= 2000) then
 			zoom = zoom - 200
 			zoomText.text = "Zoom: x" .. zoom
+			bactGroup.xScale = bactGroup.xScale - 0.2
+			bactGroup.yScale = bactGroup.yScale - 0.2
+			-- bactGroup.x = bactGroup.x * bactGroup.xScale
+			-- bactGroup.y = bactGroup.y * bactGroup.yScale
 		end
 	end
 end
@@ -218,14 +236,14 @@ local function idleMove(bacterium)
 	timer.performWithDelay(1000, bacterium:setLinearVelocity(0, 0))
 	bacterium:rotate(0)
 
-	print("\nbacterium.angle was = " .. bacterium.angle)
+	-- print("\nbacterium.angle was = " .. bacterium.angle)
 	local angle = math.random(-180, 180)
 	transition.to(bacterium, {time = 500, onComplete = bacterium:rotate(angle)})
 	-- transition.to(bacterium, {time = 500, rotation = angle})
 	bacterium.angle = math.abs(math.round(bacterium.rotation) % 360)
 	-- 
 	-- bacterium.angle = (bacterium.angle + angle) % 360
-	print("bacterium.angle is = " .. bacterium.angle)
+	-- print("bacterium.angle is = " .. bacterium.angle)
 	
 	if(bacterium.angle >= 0 and bacterium.angle < 90) then
 		bacterium:setLinearVelocity(bacterium.contentWidth - bacterium.width, -bacterium.contentHeight)
@@ -237,6 +255,42 @@ local function idleMove(bacterium)
 		bacterium:setLinearVelocity(-(bacterium.contentWidth - bacterium.width), -bacterium.contentHeight)
 	end
 	
+end
+
+-- Camera movement function
+local function moveCamera()
+	
+	bactGroup.x = bactGroup.x - (navJoystickInner.x - 240) * 0.4
+	bactGroup.y = bactGroup.y - (navJoystickInner.y - display.contentHeight + 240) * 0.4
+	
+	if(bactGroup.x > 960) then bactGroup.x = 960 end -- left border
+	if(bactGroup.x < 960 - borders.contentWidth + 50) then bactGroup.x = 960 - borders.contentWidth + 50 end -- right border
+	if(bactGroup.y < 540 - borders.contentHeight + 100) then bactGroup.y = 540 - borders.contentHeight + 100 end -- bottom border
+	if(bactGroup.y > 540 + 50) then bactGroup.y = 540 + 50 end -- top border
+	
+end
+
+-- Navigational joystick function
+local function onNavJoystick(event)
+	
+	if(event.phase == "moved") then
+		
+		navJoystickInner.x = event.x
+		navJoystickInner.y = event.y
+		
+	elseif(event.phase == "ended" or event.phase == "cancelled") then
+		
+		navJoystickInner.x = 240
+		navJoystickInner.y = display.contentHeight - 240
+		
+	end
+	
+	if(math.sqrt((navJoystickInner.x - 240)^2 + (navJoystickInner.y - display.contentHeight + 240)^2) > 80) then
+		
+		navJoystickInner.x = 240
+		navJoystickInner.y = display.contentHeight - 240
+		
+	end
 end
 
 -- Game loop function
@@ -275,8 +329,10 @@ function scene:create(event)
 	map:setFillColor(unpack(uiColorLight))
 	
 	-- Creating physical borders
-	local borders = display.newLine(bactGroup, 0, 0, display.contentWidth, 0, display.contentWidth, display.contentHeight, 0, display.contentHeight, 0, 0)
+	borders = display.newLine(bactGroup, 0, 0, display.contentWidth, 0, display.contentWidth, display.contentHeight, 0, display.contentHeight, 0, 0)
 	physics.addBody(borders, "static", {friction = 0.5, bounce = 0.3})
+	borders:setStrokeColor(0, 0, 0)
+	borders.strokeWidth = 10
 	
 	local currentNutrient = newNutrientName()
 	
@@ -368,7 +424,6 @@ function scene:create(event)
 	plusButton.y = 280
 	plusButton:setLabel("+")
 	
-	
 	-- Zoom minus button
 	local minusButton = widget.newButton({
 		label = "minus_button",
@@ -400,7 +455,7 @@ function scene:create(event)
 	navJoystickOuter.strokeWidth = 16
 	
 	-- Inner part
-	local navJoystickInner = display.newCircle(uiGroup, 240, display.contentHeight - 240, 80)
+	navJoystickInner = display.newCircle(uiGroup, 240, display.contentHeight - 240, 80)
 	navJoystickInner:setFillColor(unpack(uiColorGreenMedium))
 	navJoystickInner:setStrokeColor(unpack(uiColorGreenLight))
 	navJoystickInner.strokeWidth = 8
@@ -424,6 +479,8 @@ function scene:show(event)
 	elseif(event.phase == "did") then
 		
 		Runtime:addEventListener("key", onBackButton)
+		Runtime:addEventListener("enterFrame", moveCamera)
+		navJoystickInner:addEventListener("touch", onNavJoystick)
 		gameLoopTimer = timer.performWithDelay(math.random(3000, 6000), gameLoop, 0)
 		
 	end
@@ -439,6 +496,7 @@ function scene:hide(event)
 	elseif(event.phase == "did") then
 		
 		Runtime:removeEventListener("key", onBackButton)
+		Runtime:removeEventListener("enterFrame", moveCamera)
 		timer.pause(gameLoopTimer)
 		
 	end

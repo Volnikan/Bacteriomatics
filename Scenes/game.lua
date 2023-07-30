@@ -51,7 +51,9 @@ local zoom = 1000
 local idCount = 0
 local borders
 local navJoystickInner
+local currentNutrient = ""
 local nutrientsQuantity = 20
+local currentNutrientsQuantity = 0
 
 -- List of all nutrients
 local nutrientsList = {}
@@ -66,17 +68,15 @@ nutrient.color = {0.8, 0, 0}
 -- List of all bacterias
 local bacteriaList = {}
 
--- Initializing bacteria and their properties
-local bact = {} -- bacterium's template
-bact.id = 0
-bact.genus = ""
-bact.species = ""
-bact.generation = 1
-bact.sizeX = 40
-bact.sizeY = 200
-bact.color = {0, 0, 0.6}
-bact.membraneSize = 6
-bact.membraneColor = {0, 0.6, 0}
+-- Initializing fundamental bacteria properties
+local globalBact = {} -- bacterium's template
+globalBact.genus = genusList[math.random(table.maxn(genusList))]
+globalBact.species = speciesList[math.random(table.maxn(speciesList))]
+globalBact.sizeX = math.random(20, 60)
+globalBact.sizeY = math.random(100, 240)
+globalBact.color = {0, 0, 0.6}
+globalBact.membraneSize = 6
+globalBact.membraneColor = {0, 0.6, 0}
 
 -- Sounds variables
 local buttonSound
@@ -205,21 +205,24 @@ local function newNutrientName()
 end
 
 -- Bacterium creation function
-local function createNewBacterium()
+local function createNewBacterium(coordinateX, coordinateY, childRotation, genNum)
 	
 	print("\nCreating a new bacterium!\n")
 	
 	-- Displaying the bacterium
-	local newBact = display.newRoundedRect(bactGroup, display.contentCenterX, display.contentCenterY, math.random(20, 60), math.random(100, 240), 10)
+	local newBact = display.newRoundedRect(bactGroup, coordinateX, coordinateY, globalBact.sizeX, globalBact.sizeY, 10)
 	table.insert(bacteriaList, newBact)
 	
 	-- Setting physical and graphical properties
 	physics.addBody(newBact, "dynamic", {density = 6, friction = 0.5, bounce = 0.3})
 	newBact.path.radius = newBact.path.width * 0.5
-	newBact:setFillColor(unpack(bact.color))
-	newBact:setStrokeColor(unpack(bact.membraneColor))
-	newBact.strokeWidth = bact.membraneSize
-	newBact.angle = 0
+	newBact:setFillColor(unpack(globalBact.color))
+	newBact:setStrokeColor(unpack(globalBact.membraneColor))
+	newBact.strokeWidth = globalBact.membraneSize
+	newBact.alpha = 0
+	transition.to(newBact, {time = 4000, alpha = 1})
+	newBact.angle = childRotation
+	newBact.rotation = newBact.angle
 	
 	-- Setting id and label
 	newBact.id = idCount
@@ -228,13 +231,15 @@ local function createNewBacterium()
 	print("Bacterium's ID: " .. newBact.id)
 	
 	-- Initializing genus and species
-	newBact.genus = genusList[math.random(table.maxn(genusList))]
-	newBact.species = speciesList[math.random(table.maxn(speciesList))]
+	newBact.genus = globalBact.genus
+	newBact.species = globalBact.species
 	print("Bacterium's name: " .. newBact.genus .. " " .. newBact.species)
 	
 	-- Counting generation
-	newBact.generation = bact.generation
-	bact.generation = bact.generation + 1
+	newBact.generation = genNum + 1
+	newBact.isReproducing = false
+	newBact.wasBorn = math.round(system.getTimer())
+	newBact.reproductionTime = math.random(60000, 120000)
 	print("Bacterium's generation: " .. newBact.generation)
 	
 	-- Food parameters: radius of view, satiety, the last time of satiety reduction, hunger speed
@@ -279,6 +284,31 @@ local function death(deadBacterium)
 			break
 		end
 	end
+	
+end
+
+-- Bacteria duplication function
+local function duplicateBacterium(parentBact)
+	
+	parentBact:setLinearVelocity(0, 0) -- Stop the parent bacterium
+	parentBact:rotate(0) -- Stop rotation
+	-- Stretch the bacterium in length
+	transition.to(parentBact, {time = 4000, delta = true, height = 300})
+	
+	-- Count new coordinates and rotation
+	-- 1-st child
+	local child_1_X = parentBact.x - parentBact.contentWidth * 0.5
+	local child_1_Y = parentBact.y - parentBact.contentHeight * 0.5
+	local child_1_Rotation = parentBact.rotation
+	-- 2-nd child
+	local child_2_X = parentBact.x + parentBact.contentWidth * 0.5
+	local child_2_Y = parentBact.y + parentBact.contentHeight * 0.5
+	local child_2_Rotation = parentBact.rotation
+	
+	transition.to(parentBact, {delay = 4000, time = 4000, alpha = 0, onComplete = death(parentBact)})
+	
+	createNewBacterium(child_1_X, child_1_Y, child_1_Rotation, parentBact.generation)
+	createNewBacterium(child_2_X, child_2_Y, child_2_Rotation, parentBact.generation)
 	
 end
 
@@ -336,6 +366,7 @@ local function onGlobalCollision(event)
 			end
 		end
 		obj_1.satiety = obj_1.satiety + obj_2.foodValue
+		currentNutrientsQuantity = currentNutrientsQuantity - 1
 	
 	elseif(obj_1.label == "nutrient" and obj_2.label == "bacterium" and obj_2.satiety < 50) then
 		
@@ -348,6 +379,7 @@ local function onGlobalCollision(event)
 			end
 		end
 		obj_2.satiety = obj_2.satiety + obj_1.foodValue
+		currentNutrientsQuantity = currentNutrientsQuantity - 1
 	
 	-- Handling wall collisions
 	elseif(obj_1.label == "wall" and obj_2.label == "bacterium") then
@@ -370,71 +402,85 @@ local function gameLoop()
 	
 	for i = 1, #bacteriaList, 1 do -- Running through all bacteria
 		
-		-- Decreasing satiety
-		if(system.getTimer() - bacteriaList[i].reductionTime >= bacteriaList[i].hungerSpeed) then
+		if(bacteriaList[i]) then
 			
-			bacteriaList[i].satiety = bacteriaList[i].satiety - 1
-			bacteriaList[i].reductionTime = math.round(system.getTimer())
-			print(bacteriaList[i].satiety)
-			
-		end
-		
-		-- if a bacteria is hungry, search for food, if it's nearby or more wherever
-		if(bacteriaList[i].satiety > 0 and bacteriaList[i].satiety < 50) then
-		
-			local foodDist = bacteriaList[i].foodRadius + 1 -- Distance to a nutrient
-			local directionX = 0
-			local directionY = 0
-			
-			for k = 1, #nutrientsList, 1 do -- Running through all nutrients
+			-- Decreasing satiety
+			if(system.getTimer() - bacteriaList[i].reductionTime >= bacteriaList[i].hungerSpeed) then
 				
-				difX = nutrientsList[k].x - bacteriaList[i].x
-				difY = nutrientsList[k].y - bacteriaList[i].y
-				local currentFoodDist = math.round(math.sqrt(difX^2 + difY^2))
+				bacteriaList[i].satiety = bacteriaList[i].satiety - 1
+				bacteriaList[i].reductionTime = math.round(system.getTimer())
 				
-				if(currentFoodDist <= bacteriaList[i].foodRadius) then
-					
-					if(currentFoodDist < foodDist) then
-						
-						foodDist = currentFoodDist -- Distance to the closest nutrient
-						directionX = difX
-						directionY = difY
-
-					end
-				end
 			end
 			
-			if(foodDist > bacteriaList[i].foodRadius) then
+			-- Checking if a bacterium is ready for reproduction
+			if(system.getTimer() - bacteriaList[i].wasBorn >= bacteriaList[i].reproductionTime and bacteriaList[i].isReproducing == false) then
+				
+				bacteriaList[i].isReproducing = true
+				duplicateBacterium(bacteriaList[i])
+				
+			end
+			
+			-- if a bacteria is hungry, search for food, if it's nearby or move wherever
+			if(bacteriaList[i].satiety > 0 and bacteriaList[i].satiety < 50 and bacteriaList[i].isReproducing == false) then
+			
+				local foodDist = bacteriaList[i].foodRadius + 1 -- Distance to a nutrient
+				local directionX = 0
+				local directionY = 0
+				
+				for k = 1, #nutrientsList, 1 do -- Running through all nutrients
+					
+					difX = nutrientsList[k].x - bacteriaList[i].x
+					difY = nutrientsList[k].y - bacteriaList[i].y
+					local currentFoodDist = math.round(math.sqrt(difX^2 + difY^2))
+					
+					if(currentFoodDist <= bacteriaList[i].foodRadius) then
+						
+						if(currentFoodDist < foodDist) then
+							
+							foodDist = currentFoodDist -- Distance to the closest nutrient
+							directionX = difX
+							directionY = difY
+
+						end
+					end
+				end
+				
+				if(foodDist > bacteriaList[i].foodRadius) then
+					
+					local chance = math.random(1, 20)
+							
+					if(chance == 10) then
+						local thisBact = bacteriaList[i]
+						idleMove(thisBact)
+					end
+					
+				else
+					
+					bacteriaList[i]:setLinearVelocity(directionX, directionY)
+					
+				end	
+			elseif(bacteriaList[i].satiety <= 0) then -- if a bacterium is completely hungry, it dies
+				
+				death(bacteriaList[i])
+				
+			elseif(bacteriaList[i].isReproducing == false) then -- if a bacterium is not hungry and is not reproducing, move wherever
 				
 				local chance = math.random(1, 20)
-						
+							
 				if(chance == 10) then
 					local thisBact = bacteriaList[i]
 					idleMove(thisBact)
 				end
-				
-			else
-				
-				bacteriaList[i]:setLinearVelocity(directionX, directionY)
-				
-			end	
-		elseif(bacteriaList[i].satiety <= 0) then -- if a bacterium is completely hungry, it dies
-			
-			death(bacteriaList[i])
-			
-		else -- if a bacterium is not hungry, move wherever
-			
-			local chance = math.random(1, 20)
-						
-			if(chance == 10) then
-				local thisBact = bacteriaList[i]
-				idleMove(thisBact)
 			end
 		end
 	end
 	
 	-- Balance the number of nutrients
-	if(#nutrientsList < nutrientsQuantity) then createNewNutrient() end
+	if(currentNutrientsQuantity < nutrientsQuantity) then
+		
+		currentNutrientsQuantity = currentNutrientsQuantity + 1
+		timer.performWithDelay(10000, createNewNutrient)
+	end
 	
 end
 
@@ -465,18 +511,11 @@ function scene:create(event)
 	borders = display.newLine(bactGroup, 0, 0, display.contentWidth, 0, display.contentWidth, display.contentHeight, 0, display.contentHeight, 0, 0)
 	physics.addBody(borders, "static", {friction = 0.5, bounce = 0.3})
 	borders:setStrokeColor(0, 0, 0)
-	borders.strokeWidth = 10
+	borders.strokeWidth = 30
 	borders.label = "wall"
 	
-	local currentNutrient = newNutrientName()
-	
-	for i = 1, nutrientsQuantity, 1 do
-		
-		createNewNutrient(currentNutrient)
-		
-	end
-	
-	createNewBacterium()
+	-- Create the first bacterium
+	createNewBacterium(display.contentCenterX, display.contentCenterY, 0, 0)
 	
 	--------------------------------------------------
 	-- INTERFACE BLOCK BEGINS

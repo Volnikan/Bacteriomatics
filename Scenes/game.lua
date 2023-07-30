@@ -51,6 +51,7 @@ local zoom = 1000
 local idCount = 0
 local borders
 local navJoystickInner
+local nutrientsQuantity = 20
 
 -- List of all nutrients
 local nutrientsList = {}
@@ -120,14 +121,14 @@ local function onPlusButton(event)
 			zoomText.text = "Zoom: x" .. zoom
 			bactGroup.xScale = bactGroup.xScale + 0.1
 			bactGroup.yScale = bactGroup.yScale + 0.1
-			-- bactGroup.x = bactGroup.x - bactGroup.x * (1 - bactGroup.xScale)
+			-- bactGroup.x = bactGroup.x * 1.1
 			-- bactGroup.y = bactGroup.y * bactGroup.yScale
 		elseif(zoom >= 1000 and zoom < 2000) then
 			zoom = zoom + 200
 			zoomText.text = "Zoom: x" .. zoom
 			bactGroup.xScale = bactGroup.xScale + 0.2
 			bactGroup.yScale = bactGroup.yScale + 0.2
-			-- bactGroup.x = bactGroup.x - bactGroup.x * (1 - bactGroup.xScale)
+			-- bactGroup.x = bactGroup.x * 1.2
 			-- bactGroup.y = bactGroup.y * bactGroup.yScale
 		end
 	end
@@ -169,7 +170,15 @@ local function createNewNutrient(name)
 	-- Setting physical and graphical properties
 	physics.addBody(newNutrient, "dynamic", {density = 2})
 	newNutrient:setFillColor(unpack(nutrient.color))
+	newNutrient.alpha = 0
 	newNutrient:applyLinearImpulse(math.random(-4, 4), math.random(-4, 4), newNutrient.x, newNutrient.y)
+	transition.to(newNutrient, {time = 4000, alpha = 1})
+	
+	-- Setting label
+	newNutrient.label = "nutrient"
+	
+	-- Setting nutrient's food value
+	newNutrient.foodValue = 50
 	
 	-- Setting nutrient's name
 	if(name ~= nil) then
@@ -210,10 +219,12 @@ local function createNewBacterium()
 	newBact:setFillColor(unpack(bact.color))
 	newBact:setStrokeColor(unpack(bact.membraneColor))
 	newBact.strokeWidth = bact.membraneSize
+	newBact.angle = 0
 	
-	-- Setting id
+	-- Setting id and label
 	newBact.id = idCount
 	idCount = idCount + 1
+	newBact.label = "bacterium"
 	print("Bacterium's ID: " .. newBact.id)
 	
 	-- Initializing genus and species
@@ -226,24 +237,24 @@ local function createNewBacterium()
 	bact.generation = bact.generation + 1
 	print("Bacterium's generation: " .. newBact.generation)
 	
-	newBact.angle = 0
+	-- Food parameters: radius of view, satiety, the last time of satiety reduction, hunger speed
+	newBact.foodRadius = 400
+	newBact.satiety = 100
+	newBact.reductionTime = math.round(system.getTimer())
+	newBact.hungerSpeed = 500
 	
 end
 
 -- Idle moving bacteria function
 local function idleMove(bacterium)
 	
-	timer.performWithDelay(1000, bacterium:setLinearVelocity(0, 0))
+	-- transition.to(bacterium, {delta = true, delay = 1000, time = 500, x = 0, y = 0})
+	-- timer.performWithDelay(1000, bacterium:setLinearVelocity(0, 0))
 	bacterium:rotate(0)
 
-	-- print("\nbacterium.angle was = " .. bacterium.angle)
-	local angle = math.random(-180, 180)
-	transition.to(bacterium, {time = 500, onComplete = bacterium:rotate(angle)})
-	-- transition.to(bacterium, {time = 500, rotation = angle})
+	local angle = math.random(-30, 30)
+	transition.to(bacterium, {delta = true, delay = 200, time = 500, rotation = angle})
 	bacterium.angle = math.abs(math.round(bacterium.rotation) % 360)
-	-- 
-	-- bacterium.angle = (bacterium.angle + angle) % 360
-	-- print("bacterium.angle is = " .. bacterium.angle)
 	
 	if(bacterium.angle >= 0 and bacterium.angle < 90) then
 		bacterium:setLinearVelocity(bacterium.contentWidth - bacterium.width, -bacterium.contentHeight)
@@ -257,11 +268,25 @@ local function idleMove(bacterium)
 	
 end
 
+-- Dying bacterium function
+local function death(deadBacterium)
+	
+	display.remove(deadBacterium)
+	for i = 1, #bacteriaList, 1 do
+		
+		if(bacteriaList[i] == deadBacterium) then
+			table.remove(bacteriaList, i)
+			break
+		end
+	end
+	
+end
+
 -- Camera movement function
 local function moveCamera()
 	
-	bactGroup.x = bactGroup.x - (navJoystickInner.x - 240) * 0.4
-	bactGroup.y = bactGroup.y - (navJoystickInner.y - display.contentHeight + 240) * 0.4
+	bactGroup.x = bactGroup.x - (navJoystickInner.x - 240) * 0.3
+	bactGroup.y = bactGroup.y - (navJoystickInner.y - display.contentHeight + 240) * 0.3
 	
 	if(bactGroup.x > 960) then bactGroup.x = 960 end -- left border
 	if(bactGroup.x < 960 - borders.contentWidth + 50) then bactGroup.x = 960 - borders.contentWidth + 50 end -- right border
@@ -285,7 +310,7 @@ local function onNavJoystick(event)
 		
 	end
 	
-	if(math.sqrt((navJoystickInner.x - 240)^2 + (navJoystickInner.y - display.contentHeight + 240)^2) > 80) then
+	if(math.sqrt((navJoystickInner.x - 240)^2 + (navJoystickInner.y - display.contentHeight + 240)^2) > 100) then
 		
 		navJoystickInner.x = 240
 		navJoystickInner.y = display.contentHeight - 240
@@ -293,15 +318,123 @@ local function onNavJoystick(event)
 	end
 end
 
+-- Global collision function
+local function onGlobalCollision(event)
+	
+	local obj_1 = event.object1
+	local obj_2 = event.object2
+	
+	-- Bacterium eats a nutrient
+	if(obj_1.label == "bacterium" and obj_2.label == "nutrient" and obj_1.satiety < 50) then
+		
+		display.remove(obj_2)
+		for i = 1, #nutrientsList, 1 do
+			
+			if(nutrientsList[i] == obj_2) then
+				table.remove(nutrientsList, i)
+				break
+			end
+		end
+		obj_1.satiety = obj_1.satiety + obj_2.foodValue
+	
+	elseif(obj_1.label == "nutrient" and obj_2.label == "bacterium" and obj_2.satiety < 50) then
+		
+		display.remove(obj_1)
+		for i = 1, #nutrientsList, 1 do
+			
+			if(nutrientsList[i] == obj_1) then
+				table.remove(nutrientsList, i)
+				break
+			end
+		end
+		obj_2.satiety = obj_2.satiety + obj_1.foodValue
+	
+	-- Handling wall collisions
+	elseif(obj_1.label == "wall" and obj_2.label == "bacterium") then
+		
+		-- obj_2:rotate(90)
+		-- transition.to(obj_2, {delta = true, time = 200, rotation = math.random(-1, 1) * 90})
+		-- idleMove(obj_2)
+		
+	elseif(obj_1.label == "bacterium" and obj_2.label == "wall") then
+		
+		-- obj_1:rotate(90)
+		-- transition.to(obj_1, {delta = true, time = 200, rotation = math.random(-1, 1) * 90})
+		-- idleMove(obj_1)
+		
+	end
+end
+
 -- Game loop function
 local function gameLoop()
 	
-	for i = 1, #bacteriaList, 1 do
-	
-		local thisBact = bacteriaList[i]
-		idleMove(thisBact)
+	for i = 1, #bacteriaList, 1 do -- Running through all bacteria
 		
+		-- Decreasing satiety
+		if(system.getTimer() - bacteriaList[i].reductionTime >= bacteriaList[i].hungerSpeed) then
+			
+			bacteriaList[i].satiety = bacteriaList[i].satiety - 1
+			bacteriaList[i].reductionTime = math.round(system.getTimer())
+			print(bacteriaList[i].satiety)
+			
+		end
+		
+		-- if a bacteria is hungry, search for food, if it's nearby or more wherever
+		if(bacteriaList[i].satiety > 0 and bacteriaList[i].satiety < 50) then
+		
+			local foodDist = bacteriaList[i].foodRadius + 1 -- Distance to a nutrient
+			local directionX = 0
+			local directionY = 0
+			
+			for k = 1, #nutrientsList, 1 do -- Running through all nutrients
+				
+				difX = nutrientsList[k].x - bacteriaList[i].x
+				difY = nutrientsList[k].y - bacteriaList[i].y
+				local currentFoodDist = math.round(math.sqrt(difX^2 + difY^2))
+				
+				if(currentFoodDist <= bacteriaList[i].foodRadius) then
+					
+					if(currentFoodDist < foodDist) then
+						
+						foodDist = currentFoodDist -- Distance to the closest nutrient
+						directionX = difX
+						directionY = difY
+
+					end
+				end
+			end
+			
+			if(foodDist > bacteriaList[i].foodRadius) then
+				
+				local chance = math.random(1, 20)
+						
+				if(chance == 10) then
+					local thisBact = bacteriaList[i]
+					idleMove(thisBact)
+				end
+				
+			else
+				
+				bacteriaList[i]:setLinearVelocity(directionX, directionY)
+				
+			end	
+		elseif(bacteriaList[i].satiety <= 0) then -- if a bacterium is completely hungry, it dies
+			
+			death(bacteriaList[i])
+			
+		else -- if a bacterium is not hungry, move wherever
+			
+			local chance = math.random(1, 20)
+						
+			if(chance == 10) then
+				local thisBact = bacteriaList[i]
+				idleMove(thisBact)
+			end
+		end
 	end
+	
+	-- Balance the number of nutrients
+	if(#nutrientsList < nutrientsQuantity) then createNewNutrient() end
 	
 end
 
@@ -333,10 +466,11 @@ function scene:create(event)
 	physics.addBody(borders, "static", {friction = 0.5, bounce = 0.3})
 	borders:setStrokeColor(0, 0, 0)
 	borders.strokeWidth = 10
+	borders.label = "wall"
 	
 	local currentNutrient = newNutrientName()
 	
-	for i = 1, 20, 1 do
+	for i = 1, nutrientsQuantity, 1 do
 		
 		createNewNutrient(currentNutrient)
 		
@@ -479,9 +613,11 @@ function scene:show(event)
 	elseif(event.phase == "did") then
 		
 		Runtime:addEventListener("key", onBackButton)
+		Runtime:addEventListener("enterFrame", gameLoop)
 		Runtime:addEventListener("enterFrame", moveCamera)
+		Runtime:addEventListener("collision", onGlobalCollision)
 		navJoystickInner:addEventListener("touch", onNavJoystick)
-		gameLoopTimer = timer.performWithDelay(math.random(3000, 6000), gameLoop, 0)
+		-- gameLoopTimer = timer.performWithDelay(math.random(3000, 6000), gameLoop, 0)
 		
 	end
 end
@@ -496,8 +632,10 @@ function scene:hide(event)
 	elseif(event.phase == "did") then
 		
 		Runtime:removeEventListener("key", onBackButton)
+		Runtime:removeEventListener("enterFrame", gameLoop)
 		Runtime:removeEventListener("enterFrame", moveCamera)
-		timer.pause(gameLoopTimer)
+		Runtime:removeEventListener("collision", onGlobalCollision)
+		-- timer.pause(gameLoopTimer)
 		
 	end
 end

@@ -1,6 +1,6 @@
 local composer = require("composer")
-local widget = require("widget")
 local physics = require("physics")
+local widget = require("widget")
 local scene = composer.newScene()
 
 -- Turning on physics and setting up gravity

@@ -1,6 +1,6 @@
 local composer = require("composer")
-local widget = require("widget")
 local json = require("json")
+local widget = require("widget")
 local scene = composer.newScene()
 
 -- Setting UI color palette

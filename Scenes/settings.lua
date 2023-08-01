@@ -3,14 +3,14 @@ local json = require("json")
 local widget = require("widget")
 local scene = composer.newScene()
 
--- Setting UI color palette
+-- Set up UI color palette
 local uiColorDark = {0.13, 0.13, 0.13}
 local uiColorLight = {0.94, 0.94, 0.94}
 local uiColorGreenDark = {0.01, 0.15, 0.07}
 local uiColorGreenMedium = {0.02, 0.46, 0.22}
 local uiColorGreenLight = {0.15, 0.97, 0.52}
 
--- Creating variables
+-- Create variables
 local musicVolume = 50
 local soundVolume = 50
 local musicVolumeText
@@ -57,7 +57,7 @@ local function readSettings()
 	
 end
 
--- Writitng settings function
+-- Writing settings function
 local function writeSettings()
 	
 	settingsTable.music = musicVolume
@@ -107,27 +107,26 @@ local function onBackButton(event)
 	if(event.phase == "ended") then
 		composer.gotoScene("Scenes.menu")
 	end
-
 end
 
 -- SCENE:CREATE
 function scene:create(event)
 	
-	-- Creating and adjusting groups
+	-- Create groups
 	local sceneGroup = self.view
 	local bgGroup = display.newGroup()
 	local uiGroup = display.newGroup()
 	local textGroup = display.newGroup()
+	-- Insert all groups into scene display group
 	sceneGroup:insert(bgGroup)
 	sceneGroup:insert(uiGroup)
 	sceneGroup:insert(textGroup)
 	
-	-- Creating background
+	-- Create background
 	local background = display.newRect(bgGroup, display.contentCenterX, display.contentCenterY, display.contentWidth, display.contentHeight)
 	background:setFillColor(unpack(uiColorDark))
 	
-	-- Displaying settings
-	
+	-- Display settings
 	readSettings()
 	
 	-- Language settings
@@ -201,7 +200,7 @@ function scene:create(event)
 	soundSlider.anchorX = 1
 	soundSlider.anchorY = 0.5
 	
-	-- Creating buttons
+	-- Create buttons
 	
 	-- Back button
 	local buttonBack = widget.newButton({
@@ -225,7 +224,7 @@ function scene:create(event)
 	buttonBack.y = display.contentHeight - 120
 	buttonBack:setLabel("Back")
 	
-	-- Initializing sounds
+	-- Initialize sounds
 	buttonSound = audio.loadSound("Sounds/Button_sound1.wav")
 	
 end
@@ -264,7 +263,7 @@ function scene:destroy(event)
 	
 end
 
--- Adding scene event listeners
+-- Add scene event listeners
 scene:addEventListener("create", scene)
 scene:addEventListener("show", scene)
 scene:addEventListener("hide", scene)

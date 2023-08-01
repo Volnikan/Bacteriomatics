@@ -1,23 +1,23 @@
 local composer = require("composer")
-local widget = require("widget")
 local physics = require("physics")
+local widget = require("widget")
 local scene = composer.newScene()
 
--- Turning on physics and setting up gravity
+-- Turn on physics and set up gravity
 physics.start()
 physics.setGravity(0, 0)
 
---------------------------------------------------
+--------------------------------------------------------------------------------
 -- VARIABLES AND TABLES BLOCK BEGINS
---------------------------------------------------
+--------------------------------------------------------------------------------
 
--- Creating scene groups
+-- Create scene groups
 local bgGroup
 local bactGroup
 local uiGroup
 local textGroup
 
--- Setting UI color palette
+-- Set up UI color palette
 local uiColorDark = {0.13, 0.13, 0.13}
 local uiColorLight = {0.94, 0.94, 0.94}
 local uiColorGreenDark = {0.01, 0.15, 0.07}
@@ -42,7 +42,7 @@ local speciesList = {
 	"Xerodus"
 }
 
--- Creating variables
+-- Create variables
 local gameLoopTimer
 local budgetText
 local zoomText
@@ -58,7 +58,7 @@ local currentNutrientsQuantity = 0
 -- List of all nutrients
 local nutrientsList = {}
 
--- Initializing nutrients and their properties
+-- Initialize nutrients and their properties
 local nutrient = {} -- nutrient's template
 nutrient.id = 0
 nutrient.name = ""
@@ -68,7 +68,7 @@ nutrient.color = {0.8, 0, 0}
 -- List of all bacterias
 local bacteriaList = {}
 
--- Initializing fundamental bacteria properties
+-- Initialize fundamental bacteria properties
 local globalBact = {} -- bacterium's template
 globalBact.genus = genusList[math.random(table.maxn(genusList))]
 globalBact.species = speciesList[math.random(table.maxn(speciesList))]
@@ -81,11 +81,11 @@ globalBact.membraneColor = {0, 0.6, 0}
 -- Sounds variables
 local buttonSound
 
---------------------------------------------------
+--------------------------------------------------------------------------------
 -- VARIABLES AND TABLES BLOCK ENDS
---------------------------------------------------
+--------------------------------------------------------------------------------
 -- FUNCTIONS BLOCK BEGINS
---------------------------------------------------
+--------------------------------------------------------------------------------
 
 -- Back button function
 local function onBackButton(event)
@@ -163,33 +163,27 @@ end
 -- Nutrients creation function
 local function createNewNutrient(name)
 	
-	-- Displaying the nutrient
+	-- Display the nutrient
 	local newNutrient = display.newCircle(bactGroup, math.random(20, display.contentWidth - 20), math.random(20, display.contentHeight - 20), 20)
 	table.insert(nutrientsList, newNutrient)
 	
-	-- Setting physical and graphical properties
+	-- Set up physical and graphical properties
 	physics.addBody(newNutrient, "dynamic", {density = 2})
 	newNutrient:setFillColor(unpack(nutrient.color))
 	newNutrient.alpha = 0
 	newNutrient:applyLinearImpulse(math.random(-4, 4), math.random(-4, 4), newNutrient.x, newNutrient.y)
 	transition.to(newNutrient, {time = 4000, alpha = 1})
 	
-	-- Setting label
+	-- Set label
 	newNutrient.label = "nutrient"
 	
-	-- Setting nutrient's food value
+	-- Set nutrient's food value
 	newNutrient.foodValue = 50
 	
-	-- Setting nutrient's name
-	if(name ~= nil) then
-		
-		newNutrient.name = name
-		
-	else
-		
-		newNutrient.name = "unknown"
-		
-	end
+	-- Set nutrient's name
+	if(name ~= nil) then newNutrient.name = name
+	else newNutrient.name = "unknown" end
+	
 end
 
 -- Random nutrient name function
@@ -209,11 +203,11 @@ local function createNewBacterium(coordinateX, coordinateY, childRotation, genNu
 	
 	print("\nCreating a new bacterium!\n")
 	
-	-- Displaying the bacterium
+	-- Display the bacterium
 	local newBact = display.newRoundedRect(bactGroup, coordinateX, coordinateY, globalBact.sizeX, globalBact.sizeY, 10)
 	table.insert(bacteriaList, newBact)
 	
-	-- Setting physical and graphical properties
+	-- Set up physical and graphical properties
 	physics.addBody(newBact, "dynamic", {density = 6, friction = 0.5, bounce = 0.3})
 	newBact.path.radius = newBact.path.width * 0.5
 	newBact:setFillColor(unpack(globalBact.color))
@@ -224,18 +218,18 @@ local function createNewBacterium(coordinateX, coordinateY, childRotation, genNu
 	newBact.angle = childRotation
 	newBact.rotation = newBact.angle
 	
-	-- Setting id and label
+	-- Set id and label
 	newBact.id = idCount
 	idCount = idCount + 1
 	newBact.label = "bacterium"
 	print("Bacterium's ID: " .. newBact.id)
 	
-	-- Initializing genus and species
+	-- Initialize genus and species
 	newBact.genus = globalBact.genus
 	newBact.species = globalBact.species
 	print("Bacterium's name: " .. newBact.genus .. " " .. newBact.species)
 	
-	-- Counting generation
+	-- Count generation
 	newBact.generation = genNum + 1
 	newBact.isReproducing = false
 	newBact.wasBorn = math.round(system.getTimer())
@@ -270,7 +264,6 @@ local function idleMove(bacterium)
 	elseif(bacterium.angle >= 270 and bacterium.angle < 360) then
 		bacterium:setLinearVelocity(-(bacterium.contentWidth - bacterium.width), -bacterium.contentHeight)
 	end
-	
 end
 
 -- Dying bacterium function
@@ -283,8 +276,7 @@ local function death(deadBacterium)
 			table.remove(bacteriaList, i)
 			break
 		end
-	end
-	
+	end	
 end
 
 -- Bacteria duplication function
@@ -381,7 +373,7 @@ local function onGlobalCollision(event)
 		obj_2.satiety = obj_2.satiety + obj_1.foodValue
 		currentNutrientsQuantity = currentNutrientsQuantity - 1
 	
-	-- Handling wall collisions
+	-- Handle wall collisions
 	elseif(obj_1.label == "wall" and obj_2.label == "bacterium") then
 		
 		-- obj_2:rotate(90)
@@ -404,7 +396,7 @@ local function gameLoop()
 		
 		if(bacteriaList[i]) then
 			
-			-- Decreasing satiety
+			-- Decrease satiety
 			if(system.getTimer() - bacteriaList[i].reductionTime >= bacteriaList[i].hungerSpeed) then
 				
 				bacteriaList[i].satiety = bacteriaList[i].satiety - 1
@@ -412,7 +404,7 @@ local function gameLoop()
 				
 			end
 			
-			-- Checking if a bacterium is ready for reproduction
+			-- Check if a bacterium is ready for reproduction
 			if(system.getTimer() - bacteriaList[i].wasBorn >= bacteriaList[i].reproductionTime and bacteriaList[i].isReproducing == false) then
 				
 				bacteriaList[i].isReproducing = true
@@ -481,7 +473,6 @@ local function gameLoop()
 		currentNutrientsQuantity = currentNutrientsQuantity + 1
 		timer.performWithDelay(10000, createNewNutrient)
 	end
-	
 end
 
 --------------------------------------------------
@@ -491,23 +482,23 @@ end
 -- SCENE:CREATE
 function scene:create(event)
 	
-	-- Creating scene display groups
+	-- Create scene display groups
 	local sceneGroup = self.view
 	bgGroup = display.newGroup()
 	bactGroup = display.newGroup()
 	uiGroup = display.newGroup()
 	textGroup = display.newGroup()
-	
+	-- Insert all display groups into scene group
 	sceneGroup:insert(bgGroup)
 	sceneGroup:insert(bactGroup)
 	sceneGroup:insert(uiGroup)
 	sceneGroup:insert(textGroup)
 	
-	-- Creating map background
+	-- Create map background
 	local map = display.newRect(bgGroup, display.contentCenterX, display.contentCenterY, display.contentWidth, display.contentHeight)
 	map:setFillColor(unpack(uiColorLight))
 	
-	-- Creating physical borders
+	-- Create physical borders
 	borders = display.newLine(bactGroup, 0, 0, display.contentWidth, 0, display.contentWidth, display.contentHeight, 0, display.contentHeight, 0, 0)
 	physics.addBody(borders, "static", {friction = 0.5, bounce = 0.3})
 	borders:setStrokeColor(0, 0, 0)
@@ -521,12 +512,12 @@ function scene:create(event)
 	-- INTERFACE BLOCK BEGINS
 	--------------------------------------------------
 	
-	-- Creating microscope background
+	-- Create microscope background
 	local microscopeBg = display.newImageRect(uiGroup, "Images/Backgrounds/MicroscopeBg.png", 1920, 1080)
 	microscopeBg.x = display.contentCenterX
 	microscopeBg.y = display.contentCenterY
 	
-	-- Creating top panel
+	-- Create top panel
 	local topPanel = display.newRect(uiGroup, display.contentCenterX, 5, display.contentWidth - 10, 120)
 	topPanel.anchorX = 0.5
 	topPanel.anchorY = 0
@@ -534,7 +525,7 @@ function scene:create(event)
 	topPanel:setStrokeColor(unpack(uiColorGreenLight))
 	topPanel.strokeWidth = 10
 	
-	-- Displaying text on the panel
+	-- Display text on the panel
 	
 	-- Budget string
 	budgetText = display.newText(textGroup, "Budget: $" .. money, 40, 65, native.systemFont, 60)
@@ -546,7 +537,7 @@ function scene:create(event)
 	zoomText = display.newText(textGroup, "Zoom: x" .. zoom, display.contentCenterX, 65, native.systemFont, 60)
 	zoomText:setFillColor(unpack(uiColorLight))
 	
-	-- Creating buttons
+	-- Create buttons
 	
 	-- Menu button sheet options
 	local menuSheetOptions = {
@@ -637,7 +628,7 @@ function scene:create(event)
 	-- INTERFACE BLOCK ENDS
 	--------------------------------------------------
 	
-	-- Initializing sounds
+	-- Initialize sounds
 	buttonSound = audio.loadSound("Sounds/Button_sound1.wav")
 	
 end
@@ -687,6 +678,7 @@ function scene:destroy(event)
 	
 end
 
+-- Add scene event listeners
 scene:addEventListener("create", scene)
 scene:addEventListener("show", scene)
 scene:addEventListener("hide", scene)

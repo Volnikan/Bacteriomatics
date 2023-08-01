@@ -2,7 +2,7 @@ local composer = require("composer")
 local widget = require("widget")
 local scene = composer.newScene()
 
--- Setting UI color palette
+-- Set up UI color palette
 local uiColorDark = {0.13, 0.13, 0.13}
 local uiColorLight = {0.94, 0.94, 0.94}
 local uiColorGreenDark = {0.01, 0.15, 0.07}
@@ -61,30 +61,32 @@ end
 
 -- SCENE:CREATE
 function scene:create(event)
-
+	
+	-- Create display groups
 	local sceneGroup = self.view
 	local uiGroup = display.newGroup()
 	local textGroup = display.newGroup()
+	-- Insert all display groups into scene group
 	sceneGroup:insert(uiGroup)
 	sceneGroup:insert(textGroup)
 	
-	--------------------------------
+	----------------------------------------------------------------------------
 	-- INTERFACE BLOCK BEGINS
-	--------------------------------
+	----------------------------------------------------------------------------
 	
-	-- Creating background
+	-- Create background
 	local background = display.newRect(uiGroup, display.contentCenterX, display.contentCenterY, display.contentWidth, display.contentHeight)
 	background:setFillColor(unpack(uiColorDark))
 	
-	-- Displaying the game title
+	-- Display the game title
 	local titleText = display.newText(textGroup, "Bacteriomatics", display.contentCenterX, display.contentHeight - 900, native.systemFontBold, 120)
 	titleText:setFillColor(unpack(uiColorLight))
 	
-	-- Displaying the game version
+	-- Display the game version
 	local versionText = display.newText(textGroup, "Version: v" .. system.getInfo("appVersionString"), display.contentWidth - 160, display.contentHeight - 20, native.systemFontBold, 30)
 	versionText:setFillColor(unpack(uiColorLight), 0.5)
 	
-	-- Creating buttons
+	-- Create buttons
 	
 	-- Play button
 	local buttonPlay = widget.newButton({
@@ -146,17 +148,18 @@ function scene:create(event)
 	buttonExit.y = display.contentHeight - 200
 	buttonExit:setLabel("Exit")
 	
-	--------------------------------
+	----------------------------------------------------------------------------
 	-- INTERFACE BLOCK ENDS
-	--------------------------------
+	----------------------------------------------------------------------------
 	
-	-- Initializing sounds
+	-- Initialize sounds
 	buttonSound = audio.loadSound("Sounds/Button_sound1.wav")
 	
 end
 
 -- SCENE:SHOW
 function scene:show(event)
+	
 	local sceneGroup = self.view
 	local phase = event.phase
 	if(event.phase == "will") then
@@ -170,6 +173,7 @@ end
 
 -- SCENE:HIDE
 function scene:hide(event)
+	
 	local sceneGroup = self.view
 	local phase = event.phase
 	if(event.phase == "will") then
@@ -189,7 +193,7 @@ function scene:destroy(event)
 	
 end
 
--- Adding scene event listeners
+-- Add scene event listeners
 scene:addEventListener("create", scene)
 scene:addEventListener("show", scene)
 scene:addEventListener("hide", scene)

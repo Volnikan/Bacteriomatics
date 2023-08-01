@@ -2,7 +2,7 @@ local composer = require("composer")
 local widget = require("widget")
 local scene = composer.newScene()
 
--- Setting UI color palette
+-- Set up UI color palette
 local uiColorDark = {0.13, 0.13, 0.13}
 local uiColorLight = {0.94, 0.94, 0.94}
 local uiColorGreenDark = {0.01, 0.15, 0.07}
@@ -30,7 +30,6 @@ local function onNoButton(event)
 		composer.hideOverlay("slideUp", 500)
 		
 	end
-	
 end
 
 -- Yes button function
@@ -47,36 +46,34 @@ local function onYesButton(event)
 		native.requestExit()
 		
 	end
-	
 end
 
 --------------------------------
 -- FUNCTIONS BLOCK ENDS
 --------------------------------
 
-
 -- SCENE:CREATE
 function scene:create(event)
-
-	local sceneGroup = self.view
-	local phase = event.phase
 	
+	-- Create display groups
+	local sceneGroup = self.view	
 	local uiGroup = display.newGroup()
 	local textGroup = display.newGroup()
+	-- Insert all display groups into scene group
 	sceneGroup:insert(uiGroup)
 	sceneGroup:insert(textGroup)
 	
-	--------------------------------
+	----------------------------------------------------------------------------
 	-- INTERFACE BLOCK BEGINS
-	--------------------------------
+	----------------------------------------------------------------------------
 	
-	-- Creating background
+	-- Create background
 	local background = display.newRoundedRect(uiGroup, display.contentCenterX, display.contentCenterY, display.contentWidth * 0.6, display.contentHeight * 0.6, 120)
 	background:setFillColor(unpack(uiColorGreenDark))
 	background:setStrokeColor(unpack(uiColorGreenLight))
 	background.strokeWidth = 12
 	
-	-- Displaying the question
+	-- Display the question
 	local questionText = display.newText(textGroup, "Are you sure you want to exit from the app?", display.contentCenterX, display.contentCenterY - 200, native.systemFont, 50)
 	
 	-- No button
@@ -117,11 +114,11 @@ function scene:create(event)
 	buttonYes.y = display.contentCenterY + 200
 	buttonYes:setLabel("Yes")
 	
-	--------------------------------
+	----------------------------------------------------------------------------
 	-- INTERFACE BLOCK ENDS
-	--------------------------------
+	----------------------------------------------------------------------------
 	
-	-- Initializing sounds
+	-- Initialize sounds
 	buttonSound = audio.loadSound("Sounds/Button_sound1.wav")
 	
 end
@@ -162,7 +159,7 @@ function scene:destroy(event)
 	
 end
 
--- Adding scene event listeners
+-- Add scene event listeners
 scene:addEventListener("create", scene)
 scene:addEventListener("show", scene)
 scene:addEventListener("hide", scene)

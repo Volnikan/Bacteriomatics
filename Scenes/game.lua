@@ -49,11 +49,13 @@ local zoomText
 local money = 0
 local zoom = 1000
 local idCount = 0
-local borders
+-- local borders
 local navJoystickInner
 local currentNutrient = ""
 local nutrientsQuantity = 20
 local currentNutrientsQuantity = 0
+local wallsWidth = 2000
+local wallsHeight = 2000
 
 -- List of all nutrients
 local nutrientsList = {}
@@ -164,7 +166,7 @@ end
 local function createNewNutrient(name)
 	
 	-- Display the nutrient
-	local newNutrient = display.newCircle(bactGroup, math.random(20, display.contentWidth - 20), math.random(20, display.contentHeight - 20), 20)
+	local newNutrient = display.newCircle(bactGroup, math.random(wallLeft.x + 20, wallRight.x - 20), math.random(wallTop.y + 20, wallBottom.y - 20), 20)
 	table.insert(nutrientsList, newNutrient)
 	
 	-- Set up physical and graphical properties
@@ -184,6 +186,16 @@ local function createNewNutrient(name)
 	if(name ~= nil) then newNutrient.name = name
 	else newNutrient.name = "unknown" end
 	
+end
+
+-- Balance nutrients quantity function
+local function balanceNutrientsQuantity()
+	
+	if(currentNutrientsQuantity < nutrientsQuantity) then
+		
+		currentNutrientsQuantity = currentNutrientsQuantity + 1
+		timer.performWithDelay(10000, createNewNutrient)
+	end
 end
 
 -- Random nutrient name function
@@ -244,6 +256,43 @@ local function createNewBacterium(coordinateX, coordinateY, childRotation, genNu
 	
 end
 
+-- The function checking if a bacterium is close to a wall
+local function isCloseToWall(bact)
+	
+	if(bact.x - bactGroup.x < 30) then return true
+	elseif(bact.y - bactGroup.y < 30) then return true
+	elseif(bactGroup.x + bactGroup.contentWidth - bact.x < 30) then return true
+	elseif(bactGroup.y + bactGroup.contentHeight - bact.y < 30) then return true
+	else return false end
+	
+end
+
+-- Avoid walls function
+local function avoidWalls(bact, wall)
+	
+	if(wall == wallTop) then
+		
+		transition.to(bact, {time = 200, rotation = 180})
+		bact:setLinearVelocity(0, 30)
+		
+	elseif(wall == wallLeft) then
+		
+		transition.to(bact, {time = 200, rotation = 90})
+		bact:setLinearVelocity(30, 0)
+		
+	elseif(wall == wallRight) then
+		
+		transition.to(bact, {time = 200, rotation = 270})
+		bact:setLinearVelocity(-30, 0)
+		
+	elseif(wall == wallBottom) then
+		
+		transition.to(bact, {time = 200, rotation = 0})
+		bact:setLinearVelocity(0, -30)
+		
+	end
+end
+
 -- Idle moving bacteria function
 local function idleMove(bacterium)
 	
@@ -253,7 +302,7 @@ local function idleMove(bacterium)
 
 	local angle = math.random(-30, 30)
 	transition.to(bacterium, {delta = true, delay = 200, time = 500, rotation = angle})
-	bacterium.angle = math.abs(math.round(bacterium.rotation) % 360)
+	bacterium.angle = math.abs(math.round(bacterium.rotation + 360) % 360)
 	
 	if(bacterium.angle >= 0 and bacterium.angle < 90) then
 		bacterium:setLinearVelocity(bacterium.contentWidth - bacterium.width, -bacterium.contentHeight)
@@ -264,6 +313,17 @@ local function idleMove(bacterium)
 	elseif(bacterium.angle >= 270 and bacterium.angle < 360) then
 		bacterium:setLinearVelocity(-(bacterium.contentWidth - bacterium.width), -bacterium.contentHeight)
 	end
+	
+	-- if(isCloseToWall(bacterium)) then avoidWalls(bacterium) end
+	
+end
+
+-- A bacterium's decision making function
+local function shouldIMove(bact)
+	
+	local chance = math.random(1, 30)
+	if(chance == 1) then idleMove(bact) end
+	
 end
 
 -- Dying bacterium function
@@ -304,16 +364,90 @@ local function duplicateBacterium(parentBact)
 	
 end
 
+-- Bacterium eats a nutrient function
+local function bacteriumEats(bact, nutr)
+	
+	display.remove(nutr)
+	for i = 1, #nutrientsList, 1 do
+		if(nutrientsList[i] == nutr) then
+			table.remove(nutrientsList, i)
+			break
+		end
+	end
+	bact.satiety = bact.satiety + nutr.foodValue
+	currentNutrientsQuantity = currentNutrientsQuantity - 1
+	
+end
+
+-- Decrease satiety function
+local function decreaseSatiety(bact)
+		
+		if(system.getTimer() - bact.reductionTime >= bact.hungerSpeed) then
+			
+			bact.satiety = bact.satiety - 1
+			bact.reductionTime = math.round(system.getTimer())
+			
+		end
+end
+
+-- The function checking if a bacterium is ready to reproduce
+local function isReadyToReproduce(bact)
+	
+	if(system.getTimer() - bact.wasBorn >= bact.reproductionTime and bact.isReproducing == false) then
+		
+		bact.isReproducing = true
+		duplicateBacterium(bact)
+		
+	end	
+end
+
+-- Create walls function
+local function createWalls(lengthHorizontal, lengthVertical)
+	
+	-- Top wall
+	wallTop = display.newRect(bactGroup, wallsWidth * 0.5, 0, lengthHorizontal, 10)
+	wallTop:setFillColor(0, 0, 0)
+	physics.addBody(wallTop, "static", {friction = 0.5, bounce = 0.3})
+	wallTop.label = "wall_top"
+	
+	-- Left wall
+	wallLeft = display.newRect(bactGroup, 0, wallsHeight * 0.5, 10, lengthVertical)
+	wallLeft:setFillColor(0, 0, 0)
+	physics.addBody(wallLeft, "static", {friction = 0.5, bounce = 0.3})
+	wallLeft.label = "wall_left"
+	
+	-- Right wall
+	wallRight = display.newRect(bactGroup, wallsWidth, wallsHeight * 0.5, 10, lengthVertical)
+	wallRight:setFillColor(0, 0, 0)
+	physics.addBody(wallRight, "static", {friction = 0.5, bounce = 0.3})
+	wallRight.label = "wall_right"
+	
+	-- Bottom wall
+	wallBottom = display.newRect(bactGroup, wallsWidth * 0.5, wallsHeight, lengthHorizontal, 10)
+	wallBottom:setFillColor(0, 0, 0)
+	physics.addBody(wallBottom, "static", {friction = 0.5, bounce = 0.3})
+	wallBottom.label = "wall_bottom"
+	
+end
+
 -- Camera movement function
 local function moveCamera()
 	
 	bactGroup.x = bactGroup.x - (navJoystickInner.x - 240) * 0.3
 	bactGroup.y = bactGroup.y - (navJoystickInner.y - display.contentHeight + 240) * 0.3
 	
-	if(bactGroup.x > 960) then bactGroup.x = 960 end -- left border
-	if(bactGroup.x < 960 - borders.contentWidth + 50) then bactGroup.x = 960 - borders.contentWidth + 50 end -- right border
-	if(bactGroup.y < 540 - borders.contentHeight + 100) then bactGroup.y = 540 - borders.contentHeight + 100 end -- bottom border
-	if(bactGroup.y > 540 + 50) then bactGroup.y = 540 + 50 end -- top border
+	if(bactGroup.y > wallsHeight * 0.5 - 400) then -- top border
+		bactGroup.y = wallsHeight * 0.5 - 400
+	end
+	if(bactGroup.x > wallsWidth * 0.5) then -- left border
+		bactGroup.x = wallsWidth * 0.5
+	end
+	if(bactGroup.x < wallsWidth * 0.5 - wallTop.contentWidth) then -- right border
+		bactGroup.x = wallsWidth * 0.5 - wallTop.contentWidth
+	end
+	if(bactGroup.y < wallsHeight * 0.5 - wallLeft.contentHeight - 400) then -- bottom border
+		bactGroup.y = wallsHeight * 0.5 - wallLeft.contentHeight - 400
+	end
 	
 end
 
@@ -349,39 +483,23 @@ local function onGlobalCollision(event)
 	-- Bacterium eats a nutrient
 	if(obj_1.label == "bacterium" and obj_2.label == "nutrient" and obj_1.satiety < 50) then
 		
-		display.remove(obj_2)
-		for i = 1, #nutrientsList, 1 do
-			
-			if(nutrientsList[i] == obj_2) then
-				table.remove(nutrientsList, i)
-				break
-			end
-		end
-		obj_1.satiety = obj_1.satiety + obj_2.foodValue
-		currentNutrientsQuantity = currentNutrientsQuantity - 1
+		bacteriumEats(obj_1, obj_2)
 	
 	elseif(obj_1.label == "nutrient" and obj_2.label == "bacterium" and obj_2.satiety < 50) then
 		
-		display.remove(obj_1)
-		for i = 1, #nutrientsList, 1 do
-			
-			if(nutrientsList[i] == obj_1) then
-				table.remove(nutrientsList, i)
-				break
-			end
-		end
-		obj_2.satiety = obj_2.satiety + obj_1.foodValue
-		currentNutrientsQuantity = currentNutrientsQuantity - 1
+		bacteriumEats(obj_2, obj_1)
 	
 	-- Handle wall collisions
-	elseif(obj_1.label == "wall" and obj_2.label == "bacterium") then
+	elseif(string.starts(obj_1.label, "wall") and obj_2.label == "bacterium") then
 		
+		avoidWalls(obj_2, obj_1)
 		-- obj_2:rotate(90)
 		-- transition.to(obj_2, {delta = true, time = 200, rotation = math.random(-1, 1) * 90})
 		-- idleMove(obj_2)
 		
-	elseif(obj_1.label == "bacterium" and obj_2.label == "wall") then
+	elseif(obj_1.label == "bacterium" and string.starts(obj_2.label, "wall")) then
 		
+		avoidWalls(obj_1, obj_2)
 		-- obj_1:rotate(90)
 		-- transition.to(obj_1, {delta = true, time = 200, rotation = math.random(-1, 1) * 90})
 		-- idleMove(obj_1)
@@ -392,25 +510,15 @@ end
 -- Game loop function
 local function gameLoop()
 	
-	for i = 1, #bacteriaList, 1 do -- Running through all bacteria
+	for i = 1, #bacteriaList, 1 do -- Run through all bacteria
 		
 		if(bacteriaList[i]) then
 			
 			-- Decrease satiety
-			if(system.getTimer() - bacteriaList[i].reductionTime >= bacteriaList[i].hungerSpeed) then
-				
-				bacteriaList[i].satiety = bacteriaList[i].satiety - 1
-				bacteriaList[i].reductionTime = math.round(system.getTimer())
-				
-			end
+			decreaseSatiety(bacteriaList[i])
 			
 			-- Check if a bacterium is ready for reproduction
-			if(system.getTimer() - bacteriaList[i].wasBorn >= bacteriaList[i].reproductionTime and bacteriaList[i].isReproducing == false) then
-				
-				bacteriaList[i].isReproducing = true
-				duplicateBacterium(bacteriaList[i])
-				
-			end
+			isReadyToReproduce(bacteriaList[i])
 			
 			-- if a bacteria is hungry, search for food, if it's nearby or move wherever
 			if(bacteriaList[i].satiety > 0 and bacteriaList[i].satiety < 50 and bacteriaList[i].isReproducing == false) then
@@ -419,60 +527,47 @@ local function gameLoop()
 				local directionX = 0
 				local directionY = 0
 				
-				for k = 1, #nutrientsList, 1 do -- Running through all nutrients
+				for k = 1, #nutrientsList, 1 do -- Run through all nutrients
 					
 					difX = nutrientsList[k].x - bacteriaList[i].x
 					difY = nutrientsList[k].y - bacteriaList[i].y
 					local currentFoodDist = math.round(math.sqrt(difX^2 + difY^2))
 					
-					if(currentFoodDist <= bacteriaList[i].foodRadius) then
+					if(currentFoodDist <= foodDist) then
 						
-						if(currentFoodDist < foodDist) then
-							
-							foodDist = currentFoodDist -- Distance to the closest nutrient
-							directionX = difX
-							directionY = difY
-
-						end
+						foodDist = currentFoodDist -- Distance to the closest nutrient
+						directionX = difX
+						directionY = difY
+						
 					end
 				end
 				
 				if(foodDist > bacteriaList[i].foodRadius) then
-					
-					local chance = math.random(1, 20)
-							
-					if(chance == 10) then
-						local thisBact = bacteriaList[i]
-						idleMove(thisBact)
-					end
+				
+					shouldIMove(bacteriaList[i])
 					
 				else
-					
+				
 					bacteriaList[i]:setLinearVelocity(directionX, directionY)
 					
-				end	
+				end
+				
 			elseif(bacteriaList[i].satiety <= 0) then -- if a bacterium is completely hungry, it dies
 				
 				death(bacteriaList[i])
+			
+			-- if a bacterium is not hungry and is not reproducing, move wherever
+			elseif(bacteriaList[i].isReproducing == false) then
 				
-			elseif(bacteriaList[i].isReproducing == false) then -- if a bacterium is not hungry and is not reproducing, move wherever
+				shouldIMove(bacteriaList[i])
 				
-				local chance = math.random(1, 20)
-							
-				if(chance == 10) then
-					local thisBact = bacteriaList[i]
-					idleMove(thisBact)
-				end
 			end
 		end
 	end
 	
 	-- Balance the number of nutrients
-	if(currentNutrientsQuantity < nutrientsQuantity) then
-		
-		currentNutrientsQuantity = currentNutrientsQuantity + 1
-		timer.performWithDelay(10000, createNewNutrient)
-	end
+	balanceNutrientsQuantity()
+	
 end
 
 --------------------------------------------------
@@ -498,12 +593,8 @@ function scene:create(event)
 	local map = display.newRect(bgGroup, display.contentCenterX, display.contentCenterY, display.contentWidth, display.contentHeight)
 	map:setFillColor(unpack(uiColorLight))
 	
-	-- Create physical borders
-	borders = display.newLine(bactGroup, 0, 0, display.contentWidth, 0, display.contentWidth, display.contentHeight, 0, display.contentHeight, 0, 0)
-	physics.addBody(borders, "static", {friction = 0.5, bounce = 0.3})
-	borders:setStrokeColor(0, 0, 0)
-	borders.strokeWidth = 30
-	borders.label = "wall"
+	-- Create walls
+	createWalls(wallsWidth, wallsHeight)
 	
 	-- Create the first bacterium
 	createNewBacterium(display.contentCenterX, display.contentCenterY, 0, 0)
@@ -642,6 +733,7 @@ function scene:show(event)
 		
 	elseif(event.phase == "did") then
 		
+		physics.start()
 		Runtime:addEventListener("key", onBackButton)
 		Runtime:addEventListener("enterFrame", gameLoop)
 		Runtime:addEventListener("enterFrame", moveCamera)
@@ -661,6 +753,7 @@ function scene:hide(event)
 		
 	elseif(event.phase == "did") then
 		
+		physics.pause()
 		Runtime:removeEventListener("key", onBackButton)
 		Runtime:removeEventListener("enterFrame", gameLoop)
 		Runtime:removeEventListener("enterFrame", moveCamera)

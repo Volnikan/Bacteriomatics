@@ -433,8 +433,8 @@ end
 -- Camera movement function
 local function moveCamera()
 	
-	bactGroup.x = bactGroup.x - (navJoystickInner.x - 240) * 0.3
-	bactGroup.y = bactGroup.y - (navJoystickInner.y - display.contentHeight + 240) * 0.3
+	bactGroup.x = bactGroup.x - (navJoystickInner.x - 240) * 0.2
+	bactGroup.y = bactGroup.y - (navJoystickInner.y - display.contentHeight + 240) * 0.2
 	
 	if(bactGroup.y > wallsHeight * 0.5 - 400) then -- top border
 		bactGroup.y = wallsHeight * 0.5 - 400
